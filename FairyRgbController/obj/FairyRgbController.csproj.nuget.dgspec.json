@@ -1,0 +1,80 @@
+{
+  "format": 1,
+  "restore": {
+    "/home/pina/projects/rgb-fairy/FairyRgbController/FairyRgbController.csproj": {}
+  },
+  "projects": {
+    "/home/pina/projects/rgb-fairy/FairyRgbController/FairyRgbController.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/home/pina/projects/rgb-fairy/FairyRgbController/FairyRgbController.csproj",
+        "projectName": "FairyRgbController",
+        "projectPath": "/home/pina/projects/rgb-fairy/FairyRgbController/FairyRgbController.csproj",
+        "packagesPath": "/home/pina/.nuget/packages/",
+        "outputPath": "/home/pina/projects/rgb-fairy/FairyRgbController/obj/",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "/home/pina/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net8.0-windows10.0.22621.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net8.0-windows10.0.22621": {
+            "targetAlias": "net8.0-windows10.0.22621.0",
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "net8.0-windows10.0.22621": {
+          "targetAlias": "net8.0-windows10.0.22621.0",
+          "dependencies": {
+            "Microsoft.Windows.SDK.Contracts": {
+              "target": "Package",
+              "version": "[10.0.22621, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "downloadDependencies": [
+            {
+              "name": "Microsoft.Windows.SDK.NET.Ref",
+              "version": "[10.0.22621.56, 10.0.22621.56]"
+            },
+            {
+              "name": "Microsoft.WindowsDesktop.App.Ref",
+              "version": "[8.0.26, 8.0.26]"
+            }
+          ],
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            },
+            "Microsoft.Windows.SDK.NET.Ref": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/lib/dotnet/sdk/8.0.126/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    }
+  }
+}
