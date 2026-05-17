@@ -19,12 +19,15 @@ jobs:
         dotnet-version: '8.0.x'
 
     - name: Restore dependencies
+      working-directory: FairyRgbController
       run: dotnet restore
 
     - name: Build
-      run: dotnet build FairyRgbController/FairyRgbController.csproj --configuration Release
+      working-directory: FairyRgbController
+      run: dotnet build --configuration Release
 
     - name: Test (optional)
       # If you have tests, add them here
       # run: dotnet test --configuration Release
+      working-directory: FairyRgbController
       run: echo "No tests configured"
