@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using InTheHand.Bluetooth;
 using InTheHand.Bluetooth.GenericAttributeProfile;
 using Windows.Devices.Enumeration;
+using System.Runtime.InteropServices.WindowsRuntime;
 using FairyRgbController.Models;
 using FairyRgbController.Services;
 
