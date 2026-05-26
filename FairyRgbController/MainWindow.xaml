@@ -45,11 +45,6 @@
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Foreground" Value="#8888AA"/>
             <Setter Property="Margin" Value="0,0,0,8"/>
-            <Setter Property="TextEffects">
-                <Setter.Value>
-                    <TextEffect Position="0" Foreground="Transparent"/>
-                </Setter.Value>
-            </Setter>
         </Style>
 
         <Style x:Key="ActionButton" TargetType="Button">
