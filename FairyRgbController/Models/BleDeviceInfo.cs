@@ -8,7 +8,18 @@ namespace FairyRgbController.Models
         public string Name { get; set; } = string.Empty;
         public int Rssi { get; set; }
         public bool IsConnectable { get; set; }
+        public bool IsPaired { get; set; }
 
-        public override string ToString() => $"{Name} ({Id}) [RSSI: {Rssi}]";
+        public string SignalIcon => Rssi switch
+        {
+            0 => "📡",
+            > -50 => "🟢",
+            > -70 => "🟡",
+            _ => "🔴"
+        };
+
+        public string PairingIcon => IsPaired ? "🔗" : "📶";
+
+        public override string ToString() => $"{PairingIcon} {Name}";
     }
 }

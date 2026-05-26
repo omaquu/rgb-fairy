@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using FairyRgbController.Models;
@@ -6,6 +7,9 @@ namespace FairyRgbController.Services
 {
     public interface IFairyLedService
     {
+        event EventHandler<string>? StatusChanged;
+        event EventHandler<List<BleDeviceInfo>>? DevicesUpdated;
+
         Task<bool> IsConnectedAsync();
         Task<IReadOnlyList<BleDeviceInfo>> ScanAsync(int timeoutMs = 10000);
         Task ConnectAsync(BleDeviceInfo device);
