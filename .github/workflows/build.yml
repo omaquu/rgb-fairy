@@ -28,8 +28,13 @@ jobs:
       working-directory: FairyRgbController
       run: dotnet build --configuration Release
 
-    - name: Test (optional)
-      # If you have tests, add them here
-      # run: dotnet test --configuration Release
+    - name: Publish standalone EXE
       working-directory: FairyRgbController
-      run: echo "No tests configured"
+      run: dotnet publish --configuration Release --runtime win-x64 --self-contained false -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o publish/
+
+    - name: Upload EXE artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: FairyRgbController-win-x64
+        path: FairyRgbController/publish/
+        if-no-files-found: error
