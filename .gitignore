@@ -1,2 +1,15 @@
-.env
+# .NET
+bin/
+obj/
+*.user
+*.suo
+*.cache
+*.log
+*.vs/
+
+# IDE
+.vscode/
+.idea/
+
+# Environment
 .env

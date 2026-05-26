@@ -2,27 +2,28 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using InTheHand.Bluetooth;
-using InTheHand.Bluetooth.GenericAttributeProfile;
+using Windows.Devices.Bluetooth;
+using Windows.Devices.Bluetooth.GenericAttributeProfile;
 using Windows.Devices.Enumeration;
-using System.Runtime.InteropServices.WindowsRuntime;
+using Windows.Storage.Streams;
 using FairyRgbController.Models;
-using FairyRgbController.Services;
 
 namespace FairyRgbController.Services
 {
     public class HelloFairyService : IFairyLedService
     {
-        private BleDevice _device;
-        private GattCharacteristic _commandCharacteristic;
+        private BluetoothLEDevice? _device;
+        private GattCharacteristic? _commandCharacteristic;
         private bool _isConnected;
 
         public Task<bool> IsConnectedAsync() => Task.FromResult(_isConnected);
 
         public async Task<IReadOnlyList<BleDeviceInfo>> ScanAsync(int timeoutMs = 10000)
         {
-            var selector = BleDevice.GetDeviceSelectorFromUuid(HelloFairyProtocol.ServiceUuid);
-            var devices = await DeviceInformation.FindAllAsync(selector);
+            var selector = BluetoothLEDevice.GetDeviceSelectorFromPairingState(false);
+            var devices = await DeviceInformation.FindAllAsync(selector)
+                .AsTask().WaitAsync(TimeSpan.FromMilliseconds(timeoutMs));
+
             var list = new List<BleDeviceInfo>();
             foreach (var deviceInfo in devices)
             {
@@ -40,24 +41,25 @@ namespace FairyRgbController.Services
             if (_isConnected)
                 await DisconnectAsync();
 
-            _device = await BleDevice.FromIdAsync(deviceInfo.Id);
+            _device = await BluetoothLEDevice.FromIdAsync(deviceInfo.Id);
             if (_device == null)
-                throw new Exception("Failed to get BleDevice from Id.");
+                throw new Exception("Failed to get BluetoothLEDevice from Id.");
 
-            // Get GATT services
-            var gattServicesResult = await _device.GetGattServicesAsync();
-            if (gattServicesResult.Error != BluetoothError.Success)
-                throw new Exception($"Failed to get services: {gattServicesResult.Error}");
+            var gattServicesResult = await _device.GetGattServicesAsync(BluetoothCacheMode.Uncached);
+            if (gattServicesResult.Status != GattCommunicationStatus.Success)
+                throw new Exception($"Failed to get services: {gattServicesResult.Status}");
 
-            var service = gattServicesResult.Services.FirstOrDefault(s => s.Uuid == HelloFairyProtocol.ServiceUuid);
+            var service = gattServicesResult.Services.FirstOrDefault(s =>
+                s.Uuid == HelloFairyProtocol.ServiceUuid);
             if (service == null)
                 throw new Exception("Hello Fairy service not found.");
 
-            var characteristicsResult = await service.GetCharacteristicsAsync();
-            if (characteristicsResult.Error != BluetoothError.Success)
-                throw new Exception($"Failed to get characteristics: {characteristicsResult.Error}");
+            var characteristicsResult = await service.GetCharacteristicsAsync(BluetoothCacheMode.Uncached);
+            if (characteristicsResult.Status != GattCommunicationStatus.Success)
+                throw new Exception($"Failed to get characteristics: {characteristicsResult.Status}");
 
-            _commandCharacteristic = characteristicsResult.Characteristics.FirstOrDefault(c => c.Uuid == HelloFairyProtocol.CommandCharacteristicUuid);
+            _commandCharacteristic = characteristicsResult.Characteristics.FirstOrDefault(c =>
+                c.Uuid == HelloFairyProtocol.CommandCharacteristicUuid);
             if (_commandCharacteristic == null)
                 throw new Exception("Command characteristic not found.");
 
@@ -73,6 +75,7 @@ namespace FairyRgbController.Services
             }
             _commandCharacteristic = null;
             _isConnected = false;
+            await Task.CompletedTask;
         }
 
         private async Task WriteCommandAsync(byte[] packet)
@@ -80,25 +83,31 @@ namespace FairyRgbController.Services
             if (!_isConnected || _commandCharacteristic == null)
                 throw new InvalidOperationException("Not connected to device.");
 
-            await _commandCharacteristic.WriteAsync(packet.AsBuffer(), GattWriteOption.WriteWithResponse);
+            var writer = new DataWriter();
+            writer.WriteBytes(packet);
+            var buffer = writer.DetachBuffer();
+
+            var result = await _commandCharacteristic.WriteValueAsync(buffer, GattWriteOption.WriteWithResponse);
+            if (result != GattCommunicationStatus.Success)
+                throw new Exception($"Write failed: {result}");
         }
 
-        public Task SetPowerAsync(bool on)
+        public async Task SetPowerAsync(bool on)
         {
             var packet = HelloFairyProtocol.BuildPowerCommand(on);
-            return WriteCommandAsync(packet);
+            await WriteCommandAsync(packet);
         }
 
-        public Task SetHsvAsync(int hue, int saturation, int value)
+        public async Task SetHsvAsync(int hue, int saturation, int value)
         {
             var packet = HelloFairyProtocol.BuildColorCommand(hue, saturation, value);
-            return WriteCommandAsync(packet);
+            await WriteCommandAsync(packet);
         }
 
-        public Task SetPresetAsync(byte presetId, int brightness)
+        public async Task SetPresetAsync(byte presetId, int brightness)
         {
             var packet = HelloFairyProtocol.BuildPresetCommand(presetId, brightness);
-            return WriteCommandAsync(packet);
+            await WriteCommandAsync(packet);
         }
 
         public Task TurnOffAsync() => SetPowerAsync(false);
