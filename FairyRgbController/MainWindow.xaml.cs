@@ -519,6 +519,7 @@ namespace FairyRgbController
 
         private async void BrightnessSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
+            if (BrightnessValue == null || BrightnessSlider == null) return;
             BrightnessValue.Text = $"{(int)(BrightnessSlider.Value / 10)}%";
             if (_isPowerOn && DisconnectButton.IsEnabled)
             {
