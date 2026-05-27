@@ -69,10 +69,21 @@ namespace FairyRgbController
 
             Loaded += async (s, e) =>
             {
-                AppLogger.WriteLine("AUTO", "Starting scan on load...");
-                await Task.Delay(500);
-                ScanButton_Click(ScanButton, new RoutedEventArgs());
+                AppLogger.WriteLine("AUTO", "Loaded event fired!");
+                try
+                {
+                    await Task.Delay(500);
+                    AppLogger.WriteLine("AUTO", "Calling ScanButton_Click...");
+                    ScanButton_Click(ScanButton, new RoutedEventArgs());
+                    AppLogger.WriteLine("AUTO", "ScanButton_Click completed.");
+                }
+                catch (Exception ex)
+                {
+                    AppLogger.Error("AUTO", ex);
+                }
             };
+
+            ContentRendered += (s, e) => AppLogger.WriteLine("AUTO", "ContentRendered - window visible!");
         }
 
         #region Device Management
