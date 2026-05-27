@@ -34,6 +34,8 @@ namespace FairyRgbController.Services
                 var allSelector = $"({bPaired}) OR ({bUnpaired}) OR ({classic})";
 
                 // 15 rounds of scanning, 2s each + 1s gaps = ~45 seconds
+                var fairyDevices = new List<BleDeviceInfo>();
+
                 for (int round = 0; round < 15; round++)
                 {
                     NotifyStatus($"Scan {round + 1}/15 ({list.Count} found)...");
@@ -58,14 +60,20 @@ namespace FairyRgbController.Services
                     }
 
                     NotifyStatus($"Round {round + 1}: +{added} new (total: {list.Count})");
-                    DevicesUpdated?.Invoke(this, new List<BleDeviceInfo>(list));
 
-                    if (list.Count > 5) break; // Enough devices found
+                    // Filter to only FAIRY devices for the UI
+                    fairyDevices = list
+                        .Where(d => d.Name.IndexOf("fairy", StringComparison.OrdinalIgnoreCase) >= 0)
+                        .ToList();
+
+                    DevicesUpdated?.Invoke(this, fairyDevices);
+
+                    if (fairyDevices.Count > 3) break; // Found enough fairy devices
                     if (round < 14) await Task.Delay(1000);
                 }
 
-                NotifyStatus($"Done: {list.Count} device(s)");
-                DevicesUpdated?.Invoke(this, list);
+                NotifyStatus($"Done: {list.Count} device(s), {fairyDevices.Count} fairy");
+                DevicesUpdated?.Invoke(this, fairyDevices);
             }
             catch (Exception ex)
             {
