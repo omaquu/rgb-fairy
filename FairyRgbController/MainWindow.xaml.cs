@@ -99,7 +99,7 @@ namespace FairyRgbController
             }
 }
 
-        private void ScanButton_Click(object sender, RoutedEventArgs e)
+        private async void ScanButton_Click(object sender, RoutedEventArgs e)
         {
             ScanButton.IsEnabled = false;
             ScanButton.Content = "⏳ Skannataan...";
