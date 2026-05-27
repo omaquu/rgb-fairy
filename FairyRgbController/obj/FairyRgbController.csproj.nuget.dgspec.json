@@ -1,30 +1,30 @@
 {
   "format": 1,
   "restore": {
-    "/home/pina/projects/rgb-fairy/FairyRgbController/FairyRgbController.csproj": {}
+    "/home/pina/rgb-fairy/FairyRgbController/FairyRgbController.csproj": {}
   },
   "projects": {
-    "/home/pina/projects/rgb-fairy/FairyRgbController/FairyRgbController.csproj": {
+    "/home/pina/rgb-fairy/FairyRgbController/FairyRgbController.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/home/pina/projects/rgb-fairy/FairyRgbController/FairyRgbController.csproj",
+        "projectUniqueName": "/home/pina/rgb-fairy/FairyRgbController/FairyRgbController.csproj",
         "projectName": "FairyRgbController",
-        "projectPath": "/home/pina/projects/rgb-fairy/FairyRgbController/FairyRgbController.csproj",
+        "projectPath": "/home/pina/rgb-fairy/FairyRgbController/FairyRgbController.csproj",
         "packagesPath": "/home/pina/.nuget/packages/",
-        "outputPath": "/home/pina/projects/rgb-fairy/FairyRgbController/obj/",
+        "outputPath": "/home/pina/rgb-fairy/FairyRgbController/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/home/pina/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
-          "net8.0-windows10.0.22621.0"
+          "net8.0-windows10.0.17763.0"
         ],
         "sources": {
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
-          "net8.0-windows10.0.22621": {
-            "targetAlias": "net8.0-windows10.0.22621.0",
+          "net8.0-windows10.0.17763": {
+            "targetAlias": "net8.0-windows10.0.17763.0",
             "projectReferences": {}
           }
         },
@@ -35,14 +35,8 @@
         }
       },
       "frameworks": {
-        "net8.0-windows10.0.22621": {
-          "targetAlias": "net8.0-windows10.0.22621.0",
-          "dependencies": {
-            "Microsoft.Windows.SDK.Contracts": {
-              "target": "Package",
-              "version": "[10.0.22621, )"
-            }
-          },
+        "net8.0-windows10.0.17763": {
+          "targetAlias": "net8.0-windows10.0.17763.0",
           "imports": [
             "net461",
             "net462",
@@ -57,11 +51,11 @@
           "downloadDependencies": [
             {
               "name": "Microsoft.Windows.SDK.NET.Ref",
-              "version": "[10.0.22621.56, 10.0.22621.56]"
+              "version": "[10.0.17763.56, 10.0.17763.56]"
             },
             {
               "name": "Microsoft.WindowsDesktop.App.Ref",
-              "version": "[8.0.26, 8.0.26]"
+              "version": "[8.0.27, 8.0.27]"
             }
           ],
           "frameworkReferences": {
@@ -72,7 +66,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/lib/dotnet/sdk/8.0.126/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/lib/dotnet/sdk/8.0.127/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

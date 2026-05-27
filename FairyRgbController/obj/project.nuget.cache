@@ -1,29 +1,11 @@
 {
   "version": 2,
-  "dgSpecHash": "i3L/dp3+ef5pdi6NQF/YTYmdZR2Rrlp4Ma3qvwOlC4TAEzCJP1bzyAKCFbYcLbR5F7Boxn6ixxDJeweSsoaL4w==",
+  "dgSpecHash": "7M/1k/tyxcDmgsPXsbT9vnf7nNu2T3fN69LgRUi86z5KD6pBuub0II77yxi3OEGJ3IM/1Blm8km3K5SxoTEgVg==",
   "success": true,
-  "projectFilePath": "/home/pina/projects/rgb-fairy/FairyRgbController/FairyRgbController.csproj",
+  "projectFilePath": "/home/pina/rgb-fairy/FairyRgbController/FairyRgbController.csproj",
   "expectedPackageFiles": [
-    "/home/pina/.nuget/packages/microsoft.netcore.platforms/3.0.0/microsoft.netcore.platforms.3.0.0.nupkg.sha512",
-    "/home/pina/.nuget/packages/microsoft.netcore.targets/1.1.0/microsoft.netcore.targets.1.1.0.nupkg.sha512",
-    "/home/pina/.nuget/packages/microsoft.windows.sdk.contracts/10.0.22621.1/microsoft.windows.sdk.contracts.10.0.22621.1.nupkg.sha512",
-    "/home/pina/.nuget/packages/system.runtime/4.3.0/system.runtime.4.3.0.nupkg.sha512",
-    "/home/pina/.nuget/packages/system.runtime.interopservices.windowsruntime/4.3.0/system.runtime.interopservices.windowsruntime.4.3.0.nupkg.sha512",
-    "/home/pina/.nuget/packages/system.runtime.windowsruntime/4.6.0/system.runtime.windowsruntime.4.6.0.nupkg.sha512",
-    "/home/pina/.nuget/packages/system.runtime.windowsruntime.ui.xaml/4.6.0/system.runtime.windowsruntime.ui.xaml.4.6.0.nupkg.sha512",
-    "/home/pina/.nuget/packages/microsoft.windowsdesktop.app.ref/8.0.26/microsoft.windowsdesktop.app.ref.8.0.26.nupkg.sha512",
-    "/home/pina/.nuget/packages/microsoft.windows.sdk.net.ref/10.0.22621.56/microsoft.windows.sdk.net.ref.10.0.22621.56.nupkg.sha512"
+    "/home/pina/.nuget/packages/microsoft.windowsdesktop.app.ref/8.0.27/microsoft.windowsdesktop.app.ref.8.0.27.nupkg.sha512",
+    "/home/pina/.nuget/packages/microsoft.windows.sdk.net.ref/10.0.17763.56/microsoft.windows.sdk.net.ref.10.0.17763.56.nupkg.sha512"
   ],
-  "logs": [
-    {
-      "code": "NU1603",
-      "level": "Warning",
-      "warningLevel": 1,
-      "message": "FairyRgbController depends on Microsoft.Windows.SDK.Contracts (>= 10.0.22621) but Microsoft.Windows.SDK.Contracts 10.0.22621 was not found. An approximate best match of Microsoft.Windows.SDK.Contracts 10.0.22621.1 was resolved.",
-      "libraryId": "Microsoft.Windows.SDK.Contracts",
-      "targetGraphs": [
-        "net8.0-windows10.0.22621"
-      ]
-    }
-  ]
+  "logs": []
 }

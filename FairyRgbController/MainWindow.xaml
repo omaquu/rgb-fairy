@@ -102,7 +102,7 @@
             <Setter Property="Foreground" Value="#8888AA"/>
             <Setter Property="Margin" Value="0,0,0,6"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="LetterSpacing" Value="1"/>
+            
         </Style>
     </Window.Resources>
 
