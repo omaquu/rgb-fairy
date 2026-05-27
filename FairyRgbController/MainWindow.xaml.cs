@@ -18,12 +18,18 @@ namespace FairyRgbController
         private bool _isPowerOn;
         private bool _isSettingColor;
 
-        public MainWindow()
+public MainWindow()
         {
+            AppLogger.WriteLine("INIT", "MainWindow constructor...");
             InitializeComponent();
+            AppLogger.WriteLine("INIT", "XAML initialized.");
             _fairyService = new HelloFairyService();
+            AppLogger.WriteLine("INIT", "HelloFairyService created.");
             _fairyService.StatusChanged += OnServiceStatusChanged;
+            AppLogger.WriteLine("INIT", "Event subscribed.");
             UpdateColorPreview();
+            AppLogger.WriteLine("INIT", "Color preview updated.");
+            AppLogger.WriteLine("INIT", "MainWindow ready.");
         }
 
         private void OnServiceStatusChanged(object? sender, string message)
