@@ -28,16 +28,17 @@ namespace FairyRgbController.Services
 
             try
             {
-                // Fix: Scan BOTH paired AND unpaired BLE devices
-                var pairedSelector = BluetoothLEDevice.GetDeviceSelectorFromPairingState(true);
-                var unpairedSelector = BluetoothLEDevice.GetDeviceSelectorFromPairingState(false);
+                // Scan BOTH BLE and Classic Bluetooth devices
+                // Hello Fairy (HM-10) can appear as either
+                var bleSelector = BluetoothLEDevice.GetDeviceSelector();
+                var classicSelector = BluetoothDevice.GetDeviceSelector();
+                var combinedSelector = $"({bleSelector}) OR ({classicSelector})";
 
-                // Multi-round scan: BLE devices advertise intermittently
+                // Multi-round scan: Bluetooth devices advertise intermittently
                 // Each round is a separate FindAllAsync call
                 // Total scan: up to 30 seconds (3 rounds x 10s each)
                 for (int round = 0; round < 3; round++)
                 {
-                    var combinedSelector = $"({pairedSelector}) OR ({unpairedSelector})";
                     NotifyStatus($"Scanning {round + 1}/3 ({list.Count} found so far)...");
                     var devices = await DeviceInformation.FindAllAsync(combinedSelector)
                         .AsTask().WaitAsync(TimeSpan.FromMilliseconds(10000));
