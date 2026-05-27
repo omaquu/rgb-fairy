@@ -28,9 +28,9 @@ jobs:
       working-directory: FairyRgbController
       run: dotnet build --configuration Release
 
-    - name: Publish EXE
+    - name: Publish
       working-directory: FairyRgbController
-      run: dotnet publish --configuration Release --runtime win-x64 --self-contained false -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o publish/
+      run: dotnet publish --configuration Release --runtime win-x64 --self-contained false -o publish/
 
     - name: Upload EXE artifact
       uses: actions/upload-artifact@v4
