@@ -27,7 +27,6 @@ namespace FairyRgbController.Services
         public async Task<IReadOnlyList<BleDeviceInfo>> ScanAsync(int timeoutMs = 30000)
         {
             var allDevices = new List<BleDeviceInfo>();
-            _pendingAutoConnect = null;
 
             try
             {
