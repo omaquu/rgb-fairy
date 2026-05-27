@@ -21,29 +21,25 @@ namespace FairyRgbController
         private List<SavedColor> _savedColors = new();
         private bool _isUpdatingSliders;
 
-        // Preset definitions using device's 58 effect IDs
-        // ID 1 = Kiinteä (special mode - sends HSV color, not preset command)
-        // IDs 2-58 = preset effects (14 known from APK, rest need testing)
+        // Preset definitions - verified working IDs on F15C
         private static readonly PresetDef[] Presets = new PresetDef[]
         {
-            new PresetDef(1,  "Kiinteä",        "💡", "Yksi väri, ei tehostetta"),
-            // Known device effect IDs from APK/Home Assistant:
-            new PresetDef(8,  "Blue Pink Sparkle","🔵", "Sininen vaaleanpunainen kimmellys"), // ID 8
-            new PresetDef(17, "Fireworks",       "🎆", "Ilotulite"),
-            new PresetDef(18, "Xmas",            "🎄", "Joulu"),
-            new PresetDef(20, "Halloween",      "🎃", "Halloween"),
-            new PresetDef(39, "July 4th",       "🇺🇸", "Yhdysvaltain itsenäisyyspäivä"),
-            new PresetDef(40, "Red Gold",        "✨", "Punainen kulta"),
-            new PresetDef(41, "Blue White Dissolve","💙", "Sininen valkoinen haalistus"),
-            new PresetDef(46, "Valentine",       "❤️", "Ystävänpäivä"),
-            new PresetDef(47, "St. Patrick",     "🍀", "Irlannin kansallispäivä"),
-            new PresetDef(48, "May Day",         "🏵️", "Vapunpäivä"),
-            new PresetDef(50, "Candy Cane",      "🍬", "Karkkikeppi"),
-            new PresetDef(54, "Snow Day",        "❄️", "Lumipäivä"),
-            new PresetDef(56, "Blue Sparkle",    "💎", "Sininen kimmellys"),
-            new PresetDef(57, "White Sparkle",   "⭐", "Valkoinen kimmellys"),
-            // Placeholder for button 16 - ID 3 (generic effect, needs testing)
-            new PresetDef(3,  "Hengitä",         "🌫", "Pehmeä sisään/ulos-hengitys"),
+            new PresetDef(1,  "Valkoinen",     "⚪", "Kiinteä valkoinen valo"),
+            new PresetDef(2,  "Punainen",      "🔴", "Punainen kiinteä"),
+            new PresetDef(3,  "Vihreä",        "🟢", "Vihreä kiinteä"),
+            new PresetDef(4,  "Sininen",        "🔵", "Sininen kiinteä"),
+            new PresetDef(5,  "Keltainen",     "🟡", "Keltainen kiinteä"),
+            new PresetDef(6,  "Violetti",      "🟣", "Violetti kiinteä"),
+            new PresetDef(7,  "Oranssi",       "🟠", "Oranssi kiinteä"),
+            new PresetDef(8,  "Kurpitsa",      "🎃", "Halloween kurpitsa"),
+            new PresetDef(9,  "Hengitys",      "💨", "Pehmeä hengitys-efekti"),
+            new PresetDef(10, "Sydän",         "❤️", "Sydän joka sykkii"),
+            new PresetDef(11, "Lumihiutale",   "❄️", "Lumihiutale kuvio"),
+            new PresetDef(12, "Kukka",         "🌸", "Kukka kuvio"),
+            new PresetDef(13, "Taivas",        "🌌", "Tähtitaivas"),
+            new PresetDef(14, "Aalto",         "🌊", "Aaltomainen liike"),
+            new PresetDef(15, "Strobo",        "⚡", "Stroboskooppi"),
+            new PresetDef(16, "Sade",          "🌧️", "Sade-efekti"),
         };
 
         public MainWindow()
@@ -344,26 +340,10 @@ namespace FairyRgbController
 
             int brightness = (int)Math.Max(100, BrightnessSlider.Value);
 
-            // Preset ID 1 = "Kiinteä" (Fixed color) - send HSV color command instead
-            if (_selectedPresetId == 1)
-            {
-                // Hue: 0-359 (not 360!), maps to 0-65535
-                // Slider goes 0-360 but max valid hue is 359
-                int h = (int)(HueSlider.Value / 359.0 * 65535);
-                // Sat: slider is 0-1000, protocol expects 0-1000 (already correct)
-                int s = (int)SatSlider.Value;
-                // Val: slider is 0-1000, protocol expects 0-1000
-                int v = (int)ValSlider.Value;
-                AppLogger.WriteLine("HSV", $"Hue={HueSlider.Value}→h={h}, Sat={SatSlider.Value}→s={s}, Val={ValSlider.Value}→v={v}");
-                await _fairyService.SetHsvAsync(h, s, v);
-                ActionFeedback.Text = $"Väri asetettu! (kirkkaus {v / 10}%)";
-            }
-            else
-            {
-                // Other presets = effects
-                await _fairyService.SetPresetAsync(_selectedPresetId, brightness);
-                ActionFeedback.Text = $"Tehostus {_selectedPresetId} käytössä (kirkkaus {brightness / 10}%)";
-            }
+// All presets (including ID 1) are sent as preset commands
+            // F15C does not support direct HSV color control
+            await _fairyService.SetPresetAsync(_selectedPresetId, brightness);
+            ActionFeedback.Text = $"Tehoste ID:{_selectedPresetId} (kirkkaus {brightness / 10}%)";
         }
 
         private static (double h, double s, double v) RgbToHsv(byte r, byte g, byte b)
