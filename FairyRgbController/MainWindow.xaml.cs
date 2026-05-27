@@ -39,8 +39,7 @@ namespace FairyRgbController
                 (14, "Jazz",              "🎷", "Värikäs jazz"),
                 (15, "Disco",             "🪩", "Disco-tehoste"),
                 (16, "Valoisa",           "☀", "Kirkas valo"),
-            }
-        };
+            }];
 
         public MainWindow()
         {
