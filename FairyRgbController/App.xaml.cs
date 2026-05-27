@@ -41,21 +41,12 @@ namespace FairyRgbController
         {
             AppLogger.WriteLine("INIT", "OnStartup...");
             base.OnStartup(e);
-            AppLogger.WriteLine("INIT", "Base OnStartup done.");
-        }
-
-        private void Application_Startup(object sender, StartupEventArgs e)
-        {
-            AppLogger.WriteLine("INIT", "Application_Startup handler called...");
-            var mainWindow = new MainWindow();
-            AppLogger.WriteLine("INIT", "MainWindow created, calling Show()...");
-            mainWindow.Show();
-            AppLogger.WriteLine("INIT", "Show() called.");
+            AppLogger.WriteLine("INIT", "OnStartup done.");
         }
 
         protected override void OnExit(ExitEventArgs e)
         {
-            AppLogger.WriteLine("SHUTDOWN", $"App exiting. ExitCode: {e.ApplicationExitCode}");
+            AppLogger.WriteLine("SHUTDOWN", "App exiting.");
             base.OnExit(e);
         }
     }

@@ -16,88 +16,63 @@ namespace FairyRgbController.Services
         private GattCharacteristic? _commandCharacteristic;
         private bool _isConnected;
 
-        public string? ConnectedDeviceName { get; private set; }
-
         public event EventHandler<string>? StatusChanged;
         public event EventHandler<List<BleDeviceInfo>>? DevicesUpdated;
-        public event EventHandler<BleDeviceInfo>? AutoConnected;
 
         public Task<bool> IsConnectedAsync() => Task.FromResult(_isConnected);
 
         public async Task<IReadOnlyList<BleDeviceInfo>> ScanAsync(int timeoutMs = 30000)
         {
-            var allDevices = new List<BleDeviceInfo>();
+            var list = new List<BleDeviceInfo>();
 
             try
             {
+                // Combined selector: BLE (paired+unpaired) + Classic Bluetooth
                 var bPaired = BluetoothLEDevice.GetDeviceSelectorFromPairingState(true);
                 var bUnpaired = BluetoothLEDevice.GetDeviceSelectorFromPairingState(false);
                 var classic = BluetoothDevice.GetDeviceSelector();
                 var allSelector = $"({bPaired}) OR ({bUnpaired}) OR ({classic})";
 
+                // 15 rounds of scanning, 2s each + 1s gaps = ~45 seconds
                 for (int round = 0; round < 15; round++)
                 {
-                    NotifyStatus($"Scan {round + 1}/15 ({allDevices.Count} found)...");
+                    NotifyStatus($"Scan {round + 1}/15 ({list.Count} found)...");
                     var devices = await DeviceInformation.FindAllAsync(allSelector)
                         .AsTask().WaitAsync(TimeSpan.FromMilliseconds(5000));
 
-                    // Add new devices
+                    int added = 0;
                     foreach (var di in devices)
                     {
                         if (string.IsNullOrWhiteSpace(di.Name)) continue;
-                        if (!allDevices.Any(d => d.Id == di.Id))
+                        if (!list.Any(d => d.Id == di.Id))
                         {
-                            allDevices.Add(new BleDeviceInfo
+                            list.Add(new BleDeviceInfo
                             {
                                 Id = di.Id,
                                 Name = di.Name,
                                 IsPaired = IsPaired(di),
                                 IsConnectable = di.IsEnabled
                             });
+                            added++;
                         }
                     }
 
-                    // Filter to only FAIRY devices for the UI
-                    var fairyDevices = allDevices
-                        .Where(d => d.Name.IndexOf("fairy", StringComparison.OrdinalIgnoreCase) >= 0)
-                        .ToList();
+                    NotifyStatus($"Round {round + 1}: +{added} new (total: {list.Count})");
+                    DevicesUpdated?.Invoke(this, new List<BleDeviceInfo>(list));
 
-                    NotifyStatus($"Round {round + 1}: {fairyDevices.Count} Fairy device(s)");
-                    
-                    // Only report Fairy devices to the UI
-                    DevicesUpdated?.Invoke(this, fairyDevices);
-
-                    // Auto-connect immediately if exactly one Fairy device found
-                    if (fairyDevices.Count == 1 && !_isConnected)
-                    {
-                        NotifyStatus($"Found {fairyDevices[0].Name} — connecting...");
-                        // Auto-connect immediately (fire and forget in background)
-                        var fairy = fairyDevices[0];
-                        _ = ConnectAsync(fairy).ContinueWith(t =>
-                        {
-                            if (t.IsFaulted)
-                                NotifyStatus($"Auto-connect failed: {t.Exception?.InnerException?.Message}");
-                        });
-                    }
-                    else if (fairyDevices.Count > 1)
-                    {
-                        NotifyStatus($"{fairyDevices.Count} Fairy devices — select one");
-                    }
-
+                    if (list.Count > 5) break; // Enough devices found
                     if (round < 14) await Task.Delay(1000);
                 }
 
-                NotifyStatus("Scan complete");
+                NotifyStatus($"Done: {list.Count} device(s)");
+                DevicesUpdated?.Invoke(this, list);
             }
             catch (Exception ex)
             {
-                NotifyStatus($"Scan error: {ex.Message}");
+                NotifyStatus($"Error: {ex.Message}");
             }
 
-            // Return only Fairy devices
-            return allDevices
-                .Where(d => d.Name.IndexOf("fairy", StringComparison.OrdinalIgnoreCase) >= 0)
-                .ToList();
+            return list;
         }
 
         private static bool IsPaired(DeviceInformation di)
@@ -137,9 +112,7 @@ namespace FairyRgbController.Services
                         if (_commandCharacteristic != null)
                         {
                             _isConnected = true;
-                            ConnectedDeviceName = deviceInfo.Name;
                             NotifyStatus($"✓ Connected to {deviceInfo.Name}");
-                            AutoConnected?.Invoke(this, deviceInfo);
                             return;
                         }
                     }
@@ -154,7 +127,6 @@ namespace FairyRgbController.Services
             if (sender.ConnectionStatus == BluetoothConnectionStatus.Disconnected)
             {
                 _isConnected = false;
-                ConnectedDeviceName = null;
                 NotifyStatus("Disconnected.");
             }
         }
@@ -169,15 +141,13 @@ namespace FairyRgbController.Services
             }
             _commandCharacteristic = null;
             _isConnected = false;
-            ConnectedDeviceName = null;
             NotifyStatus("Disconnected.");
             await Task.CompletedTask;
         }
 
         private async Task Write(byte[] data)
         {
-            if (!_isConnected || _commandCharacteristic == null)
-                throw new InvalidOperationException("Not connected.");
+            if (!_isConnected || _commandCharacteristic == null) throw new InvalidOperationException();
             var w = new DataWriter();
             w.WriteBytes(data);
             await _commandCharacteristic.WriteValueAsync(w.DetachBuffer(), GattWriteOption.WriteWithResponse);
@@ -186,7 +156,7 @@ namespace FairyRgbController.Services
         public async Task SetPowerAsync(bool on)
         {
             await Write(HelloFairyProtocol.BuildPowerCommand(on));
-            NotifyStatus(on ? "Power ON" : "Power OFF");
+            NotifyStatus(on ? "ON" : "OFF");
         }
 
         public async Task SetHsvAsync(int h, int s, int v)
