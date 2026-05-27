@@ -45,8 +45,17 @@ namespace FairyRgbController
         public MainWindow()
         {
             AppLogger.WriteLine("INIT", "MainWindow constructing full UI...");
-            InitializeComponent();
-            AppLogger.WriteLine("INIT", "XAML initialized.");
+            try
+            {
+                AppLogger.WriteLine("INIT", "Calling InitializeComponent...");
+                InitializeComponent();
+                AppLogger.WriteLine("INIT", "XAML initialized.");
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error("INIT", ex);
+                throw;
+            }
             _fairyService = new HelloFairyService();
             _fairyService.StatusChanged += (s, msg) => Dispatcher.Invoke(() => ActionFeedback.Text = msg);
             _fairyService.DevicesUpdated += OnDevicesUpdated;
