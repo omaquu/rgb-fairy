@@ -42,8 +42,11 @@ namespace FairyRgbController
             AppLogger.WriteLine("INIT", "OnStartup...");
             base.OnStartup(e);
             AppLogger.WriteLine("INIT", "Base OnStartup done.");
+        }
 
-            AppLogger.WriteLine("INIT", "Creating MainWindow...");
+        private void Application_Startup(object sender, StartupEventArgs e)
+        {
+            AppLogger.WriteLine("INIT", "Application_Startup handler called...");
             var mainWindow = new MainWindow();
             AppLogger.WriteLine("INIT", "MainWindow created, calling Show()...");
             mainWindow.Show();
