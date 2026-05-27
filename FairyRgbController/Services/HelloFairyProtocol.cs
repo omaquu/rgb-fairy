@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using FairyRgbController;
 
 namespace FairyRgbController.Services
 {
@@ -25,6 +26,8 @@ namespace FairyRgbController.Services
             packet.AddRange(payload);
             byte checksum = (byte)(packet.Sum(b => b) % 256);
             packet.Add(checksum);
+            // Debug log the packet
+            AppLogger.WriteLine("BLE", $"TX: {BitConverter.ToString(packet.ToArray())}");
             return packet.ToArray();
         }
 

@@ -352,9 +352,9 @@ namespace FairyRgbController
                 int h = (int)(HueSlider.Value / 359.0 * 65535);
                 // Sat: slider is 0-1000, protocol expects 0-1000 (already correct)
                 int s = (int)SatSlider.Value;
-                // Val: slider is 100-1000, but protocol expects 0-1000
-                // Use Val directly (it's already in 0-1000 range from brightness slider)
+                // Val: slider is 0-1000, protocol expects 0-1000
                 int v = (int)ValSlider.Value;
+                AppLogger.WriteLine("HSV", $"Hue={HueSlider.Value}→h={h}, Sat={SatSlider.Value}→s={s}, Val={ValSlider.Value}→v={v}");
                 await _fairyService.SetHsvAsync(h, s, v);
                 ActionFeedback.Text = $"Väri asetettu! (kirkkaus {v / 10}%)";
             }
