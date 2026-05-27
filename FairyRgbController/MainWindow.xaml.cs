@@ -21,25 +21,29 @@ namespace FairyRgbController
         private List<SavedColor> _savedColors = new();
         private bool _isUpdatingSliders;
 
-        // Preset mode definitions (id, name, icon, description)
+        // Preset definitions using device's 58 effect IDs
+        // ID 1 = Kiinteä (special mode - sends HSV color, not preset command)
+        // IDs 2-58 = preset effects (14 known from APK, rest need testing)
         private static readonly PresetDef[] Presets = new PresetDef[]
         {
             new PresetDef(1,  "Kiinteä",        "💡", "Yksi väri, ei tehostetta"),
-            new PresetDef(2,  "Hengitä",        "🌫", "Pehmeä sisään/ulos-hengitys"),
-            new PresetDef(3,  "Värihyppy",      "🔀", "Hyppii satunnaisesti värien välillä"),
-            new PresetDef(4,  "Aalto",          "🌊", "Väri kulkee aaltomaisesti"),
-            new PresetDef(5,  "Stroboskooppi",  "⚡", "Nopea välkyntä"),
-            new PresetDef(6,  "Heikkeneminen",  "💨", "Värit himmentyvät pehmeästi"),
-            new PresetDef(7,  "Sadekaari",      "🌈", "Sateenkaari-pyörteinen"),
-            new PresetDef(8,  "7 väriä",        "🎆", "Kaikki 7 väriä vuorotellen"),
-            new PresetDef(9,  "RGB-ajo",        "🔁", "RGB-värien ajosykli"),
-            new PresetDef(10, "DIY 1",          "1️⃣", "Räätälöity tila 1"),
-            new PresetDef(11, "DIY 2",          "2️⃣", "Räätälöity tila 2"),
-            new PresetDef(12, "Räjähtävä",      "💥", "Värit räjähtävät ulos"),
-            new PresetDef(13, "Virtaava",       "➡",  "Virtaava yhden suuntainen"),
-            new PresetDef(14, "Jazz",           "🎷", "Värikäs jazz"),
-            new PresetDef(15, "Disco",          "🪩", "Disco-tehoste"),
-            new PresetDef(16, "Valoisa",        "☀", "Kirkas valo"),
+            // Known device effect IDs from APK/Home Assistant:
+            new PresetDef(8,  "Blue Pink Sparkle","🔵", "Sininen vaaleanpunainen kimmellys"), // ID 8
+            new PresetDef(17, "Fireworks",       "🎆", "Ilotulite"),
+            new PresetDef(18, "Xmas",            "🎄", "Joulu"),
+            new PresetDef(20, "Halloween",      "🎃", "Halloween"),
+            new PresetDef(39, "July 4th",       "🇺🇸", "Yhdysvaltain itsenäisyyspäivä"),
+            new PresetDef(40, "Red Gold",        "✨", "Punainen kulta"),
+            new PresetDef(41, "Blue White Dissolve","💙", "Sininen valkoinen haalistus"),
+            new PresetDef(46, "Valentine",       "❤️", "Ystävänpäivä"),
+            new PresetDef(47, "St. Patrick",     "🍀", "Irlannin kansallispäivä"),
+            new PresetDef(48, "May Day",         "🏵️", "Vapunpäivä"),
+            new PresetDef(50, "Candy Cane",      "🍬", "Karkkikeppi"),
+            new PresetDef(54, "Snow Day",        "❄️", "Lumipäivä"),
+            new PresetDef(56, "Blue Sparkle",    "💎", "Sininen kimmellys"),
+            new PresetDef(57, "White Sparkle",   "⭐", "Valkoinen kimmellys"),
+            // Placeholder for button 16 - ID 3 (generic effect, needs testing)
+            new PresetDef(3,  "Hengitä",         "🌫", "Pehmeä sisään/ulos-hengitys"),
         };
 
         public MainWindow()
@@ -343,11 +347,16 @@ namespace FairyRgbController
             // Preset ID 1 = "Kiinteä" (Fixed color) - send HSV color command instead
             if (_selectedPresetId == 1)
             {
-                int h = (int)(HueSlider.Value / 360.0 * 65535);
+                // Hue: 0-359 (not 360!), maps to 0-65535
+                // Slider goes 0-360 but max valid hue is 359
+                int h = (int)(HueSlider.Value / 359.0 * 65535);
+                // Sat: slider is 0-1000, protocol expects 0-1000 (already correct)
                 int s = (int)SatSlider.Value;
-                int v = (int)(ValSlider.Value * brightness / 1000.0);
+                // Val: slider is 100-1000, but protocol expects 0-1000
+                // Use Val directly (it's already in 0-1000 range from brightness slider)
+                int v = (int)ValSlider.Value;
                 await _fairyService.SetHsvAsync(h, s, v);
-                ActionFeedback.Text = $"Väri asetettu! (kirkkaus {brightness / 10}%)";
+                ActionFeedback.Text = $"Väri asetettu! (kirkkaus {v / 10}%)";
             }
             else
             {

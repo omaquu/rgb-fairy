@@ -233,7 +233,7 @@
                                 <ColumnDefinition Width="40"/>
                             </Grid.ColumnDefinitions>
                             <TextBlock Text="Kirkkaus (V)" FontSize="11" Foreground="#8888AA" VerticalAlignment="Center"/>
-                            <Slider x:Name="ValSlider" Grid.Column="1" Minimum="100" Maximum="1000"
+                            <Slider x:Name="ValSlider" Grid.Column="1" Minimum="0" Maximum="1000"
                                     Value="1000" VerticalAlignment="Center" Margin="8,0"
                                     ValueChanged="HsvSlider_ValueChanged"/>
                             <TextBlock x:Name="ValValue" Grid.Column="2" Text="100%" FontSize="11"
