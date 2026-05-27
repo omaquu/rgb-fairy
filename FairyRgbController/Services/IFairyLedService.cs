@@ -9,14 +9,17 @@ namespace FairyRgbController.Services
     {
         event EventHandler<string>? StatusChanged;
         event EventHandler<List<BleDeviceInfo>>? DevicesUpdated;
+        event EventHandler<BleDeviceInfo>? AutoConnected;
+
+        string? ConnectedDeviceName { get; }
 
         Task<bool> IsConnectedAsync();
-        Task<IReadOnlyList<BleDeviceInfo>> ScanAsync(int timeoutMs = 10000);
+        Task<IReadOnlyList<BleDeviceInfo>> ScanAsync(int timeoutMs = 30000);
         Task ConnectAsync(BleDeviceInfo device);
         Task DisconnectAsync();
-        Task SetHsvAsync(int hue, int saturation, int value); // hue 0-359, sat/val 0-1000
+        Task SetHsvAsync(int hue, int saturation, int value);
         Task SetPowerAsync(bool on);
-        Task SetPresetAsync(byte presetId, int brightness); // brightness 0-1000
+        Task SetPresetAsync(byte presetId, int brightness);
         Task TurnOffAsync();
     }
 }
