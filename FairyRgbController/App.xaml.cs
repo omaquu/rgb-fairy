@@ -41,12 +41,12 @@ namespace FairyRgbController
         {
             AppLogger.WriteLine("INIT", "OnStartup...");
             base.OnStartup(e);
-            AppLogger.WriteLine("INIT", "OnStartup done.");
+            AppLogger.WriteLine("INIT", "Base OnStartup done.");
         }
 
         protected override void OnExit(ExitEventArgs e)
         {
-            AppLogger.WriteLine("SHUTDOWN", "App exiting.");
+            AppLogger.WriteLine("SHUTDOWN", $"App exiting. ExitCode: {e.ApplicationExitCode}");
             base.OnExit(e);
         }
     }
