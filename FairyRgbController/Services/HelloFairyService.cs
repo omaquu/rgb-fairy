@@ -17,6 +17,10 @@ namespace FairyRgbController.Services
         private bool _isConnected;
         private string? _connectedDeviceId;
 
+        // DeviceWatcher for continuous BLE scanning
+        private DeviceWatcher? _deviceWatcher;
+        private readonly List<BleDeviceInfo> _discoveredDevices = new();
+
         public event EventHandler<string>? StatusChanged;
         public event EventHandler<List<BleDeviceInfo>>? DevicesUpdated;
 
@@ -24,68 +28,103 @@ namespace FairyRgbController.Services
 
         public async Task<IReadOnlyList<BleDeviceInfo>> ScanAsync(int timeoutMs = 10000)
         {
-            var list = new List<BleDeviceInfo>();
+            _discoveredDevices.Clear();
+            var completionSource = new TaskCompletionSource<bool>();
 
-            try
+            // Fix: Use DeviceWatcher for continuous BLE scanning
+            // Unlike FindAllAsync (one-shot), DeviceWatcher provides real-time device discovery
+            // which catches devices that advertise intermittently
+            var pairedSelector = BluetoothLEDevice.GetDeviceSelectorFromPairingState(true);
+            var unpairedSelector = BluetoothLEDevice.GetDeviceSelectorFromPairingState(false);
+            var combinedSelector = $"({pairedSelector}) OR ({unpairedSelector})";
+
+            NotifyStatus("Scanning for BLE devices...");
+
+            _deviceWatcher = DeviceInformation.CreateWatcher(
+                combinedSelector,
+                null, // no additional properties
+                DeviceInformationKind.AssociationEndpoint);
+
+            _deviceWatcher.Added += (watcher, deviceInfo) =>
             {
-                // Fix: Scan BOTH paired AND unpaired BLE devices
-                // The original code only scanned unpaired (GetDeviceSelectorFromPairingState(false))
-                // If Windows has already paired/remembered the fairy device, it won't appear
-                var pairedSelector = BluetoothLEDevice.GetDeviceSelectorFromPairingState(true);
-                var unpairedSelector = BluetoothLEDevice.GetDeviceSelectorFromPairingState(false);
-                var combinedSelector = $"({pairedSelector}) OR ({unpairedSelector})";
-
-                NotifyStatus("Scanning for BLE devices...");
-                var devices = await DeviceInformation.FindAllAsync(combinedSelector)
-                    .AsTask().WaitAsync(TimeSpan.FromMilliseconds(timeoutMs));
-
-                foreach (var deviceInfo in devices)
+                if (!string.IsNullOrWhiteSpace(deviceInfo.Name))
                 {
-                    // Skip devices with no name
-                    if (string.IsNullOrWhiteSpace(deviceInfo.Name))
-                        continue;
-
-                    // Check if it looks like a fairy device (HM-10 / LEDnet / generic BLE)
-                    var device = new BleDeviceInfo
+                    lock (_discoveredDevices)
                     {
-                        Id = deviceInfo.Id,
-                        Name = deviceInfo.Name,
-                        IsConnectable = deviceInfo.IsEnabled,
-                        IsPaired = IsDevicePaired(deviceInfo),
-                        Rssi = 0 // RSSI not available from DeviceInformation
-                    };
-                    list.Add(device);
+                        if (!_discoveredDevices.Any(d => d.Id == deviceInfo.Id))
+                        {
+                            _discoveredDevices.Add(new BleDeviceInfo
+                            {
+                                Id = deviceInfo.Id,
+                                Name = deviceInfo.Name,
+                                IsPaired = IsDevicePaired(deviceInfo),
+                                IsConnectable = deviceInfo.IsEnabled
+                            });
+                            // Notify UI with updated list
+                            DevicesUpdated?.Invoke(this,
+                                new List<BleDeviceInfo>(_discoveredDevices));
+                        }
+                    }
                 }
+            };
 
-                // Try to read RSSI for each device (async)
-                // Note: RSSI is only available from watcher, not static enumeration
-                // We'll mark device count instead
-
-                NotifyStatus($"Found {list.Count} BLE device(s). Select one and connect.");
-            }
-            catch (TimeoutException)
+            _deviceWatcher.Updated += (watcher, deviceInfo, updateInfo) =>
             {
-                NotifyStatus("Scan timed out. Try again.");
-            }
-            catch (Exception ex)
-            {
-                NotifyStatus($"Scan failed: {ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"BLE Scan error: {ex}");
-            }
+                // Update device info if needed
+            };
 
-            return list;
+            _deviceWatcher.Removed += (watcher, deviceInfo) =>
+            {
+                lock (_discoveredDevices)
+                {
+                    _discoveredDevices.RemoveAll(d => d.Id == deviceInfo.Id);
+                    DevicesUpdated?.Invoke(this,
+                        new List<BleDeviceInfo>(_discoveredDevices));
+                }
+            };
+
+            _deviceWatcher.EnumerationCompleted += (watcher, args) =>
+            {
+                // Initial enumeration complete, but watcher continues to find new devices
+                NotifyStatus($"Found {_discoveredDevices.Count} BLE device(s). Still listening...");
+                completionSource.TrySetResult(true);
+            };
+
+            _deviceWatcher.Stopped += (watcher, args) =>
+            {
+                completionSource.TrySetResult(false);
+            };
+
+            _deviceWatcher.Start();
+
+            // Wait for initial enumeration (timeoutMs)
+            await Task.WhenAny(
+                completionSource.Task,
+                Task.Delay(timeoutMs));
+
+            // Stop the watcher after timeout
+            StopWatcher();
+
+            NotifyStatus($"Scan complete. Found {_discoveredDevices.Count} device(s).");
+
+            return new List<BleDeviceInfo>(_discoveredDevices);
+        }
+
+        private void StopWatcher()
+        {
+            if (_deviceWatcher != null &&
+                (_deviceWatcher.Status == DeviceWatcherStatus.Started ||
+                 _deviceWatcher.Status == DeviceWatcherStatus.EnumerationCompleted))
+            {
+                try { _deviceWatcher.Stop(); } catch { }
+            }
+            _deviceWatcher = null;
         }
 
         private static bool IsDevicePaired(DeviceInformation deviceInfo)
         {
-            try
-            {
-                return deviceInfo.Pairing?.IsPaired ?? false;
-            }
-            catch
-            {
-                return false;
-            }
+            try { return deviceInfo.Pairing?.IsPaired ?? false; }
+            catch { return false; }
         }
 
         public async Task ConnectAsync(BleDeviceInfo deviceInfo)
@@ -99,36 +138,30 @@ namespace FairyRgbController.Services
             if (_device == null)
                 throw new Exception($"Failed to get BluetoothLEDevice from Id: {deviceInfo.Id}");
 
-            // Wait for connection
             _device.ConnectionStatusChanged += OnConnectionStatusChanged;
 
-            var gattServicesResult = await _device.GetGattServicesAsync(BluetoothCacheMode.Uncached);
-            if (gattServicesResult.Status != GattCommunicationStatus.Success &&
-                gattServicesResult.Status != GattCommunicationStatus.ProtocolError)
+            // Try GATT service discovery with retry
+            GattServicesResult? gattServicesResult = null;
+            for (int retry = 0; retry < 3; retry++)
             {
-                // Retry once for protocol error
-                await Task.Delay(500);
-                var retryResult = await _device.GetGattServicesAsync(BluetoothCacheMode.Uncached);
-                if (retryResult.Status != GattCommunicationStatus.Success)
-                {
-                    var errorMsg = retryResult.Status == GattCommunicationStatus.ProtocolError
-                        ? $"GATT protocol error (try pairing in Windows Bluetooth settings first)"
-                        : $"Failed to get services: {retryResult.Status}";
-                    throw new Exception(errorMsg);
-                }
+                gattServicesResult = await _device.GetGattServicesAsync(BluetoothCacheMode.Uncached);
+                if (gattServicesResult.Status == GattCommunicationStatus.Success)
+                    break;
+                await Task.Delay(500 * (retry + 1));
             }
+
+            if (gattServicesResult == null || gattServicesResult.Status != GattCommunicationStatus.Success)
+                throw new Exception($"Failed to get GATT services after 3 retries. " +
+                    "Ensure device is powered on and in range.");
 
             var service = gattServicesResult.Services?.FirstOrDefault(s =>
                 s.Uuid == HelloFairyProtocol.ServiceUuid);
             if (service == null)
             {
-                // Try to enumerate all available services for debugging
-                var serviceList = gattServicesResult.Services?.Select(s => s.Uuid.ToString()) ?? Enumerable.Empty<string>();
-                var availableServices = string.Join(", ", serviceList);
+                var available = gattServicesResult.Services?.Select(s => s.Uuid.ToString()) ?? Enumerable.Empty<string>();
                 throw new Exception(
                     $"Hello Fairy service not found. Expected: {HelloFairyProtocol.ServiceUuid}\n" +
-                    $"Available services: {(string.IsNullOrEmpty(availableServices) ? "none" : availableServices)}\n" +
-                    "Try: 1) Ensure device is powered on 2) Unpair and re-pair in Windows Bluetooth settings");
+                    $"Available: {(string.IsNullOrEmpty(string.Join(",", available)) ? "none" : string.Join(", ", available))}");
             }
 
             var characteristicsResult = await service.GetCharacteristicsAsync(BluetoothCacheMode.Uncached);
@@ -138,7 +171,7 @@ namespace FairyRgbController.Services
             _commandCharacteristic = characteristicsResult.Characteristics?.FirstOrDefault(c =>
                 c.Uuid == HelloFairyProtocol.CommandCharacteristicUuid);
             if (_commandCharacteristic == null)
-                throw new Exception("Command characteristic not found on the Hello Fairy service.");
+                throw new Exception("Command characteristic not found on Hello Fairy service.");
 
             _isConnected = true;
             _connectedDeviceId = deviceInfo.Id;
@@ -157,6 +190,7 @@ namespace FairyRgbController.Services
 
         public async Task DisconnectAsync()
         {
+            StopWatcher();
             if (_device != null)
             {
                 _device.ConnectionStatusChanged -= OnConnectionStatusChanged;
