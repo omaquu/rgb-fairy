@@ -15,7 +15,6 @@ namespace FairyRgbController.Services
         private BluetoothLEDevice? _device;
         private GattCharacteristic? _commandCharacteristic;
         private bool _isConnected;
-        private BleDeviceInfo? _pendingAutoConnect;
 
         public string? ConnectedDeviceName { get; private set; }
 
@@ -69,11 +68,17 @@ namespace FairyRgbController.Services
                     // Only report Fairy devices to the UI
                     DevicesUpdated?.Invoke(this, fairyDevices);
 
-                    // Auto-connect if exactly one Fairy device found and not already connected
-                    if (fairyDevices.Count == 1 && !_isConnected && _pendingAutoConnect == null)
+                    // Auto-connect immediately if exactly one Fairy device found
+                    if (fairyDevices.Count == 1 && !_isConnected)
                     {
-                        _pendingAutoConnect = fairyDevices[0];
-                        NotifyStatus($"✓ Found {fairyDevices[0].Name} — connecting...");
+                        NotifyStatus($"Found {fairyDevices[0].Name} — connecting...");
+                        // Auto-connect immediately (fire and forget in background)
+                        var fairy = fairyDevices[0];
+                        _ = ConnectAsync(fairy).ContinueWith(t =>
+                        {
+                            if (t.IsFaulted)
+                                NotifyStatus($"Auto-connect failed: {t.Exception?.InnerException?.Message}");
+                        });
                     }
                     else if (fairyDevices.Count > 1)
                     {
@@ -88,21 +93,6 @@ namespace FairyRgbController.Services
             catch (Exception ex)
             {
                 NotifyStatus($"Scan error: {ex.Message}");
-            }
-
-            // Auto-connect after scan if we found one
-            if (_pendingAutoConnect != null && !_isConnected)
-            {
-                var device = _pendingAutoConnect;
-                _pendingAutoConnect = null;
-                try
-                {
-                    await ConnectAsync(device);
-                }
-                catch (Exception ex)
-                {
-                    NotifyStatus($"Auto-connect failed: {ex.Message}");
-                }
             }
 
             // Return only Fairy devices

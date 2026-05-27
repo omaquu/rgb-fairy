@@ -19,8 +19,9 @@ namespace FairyRgbController.Services
         public static byte[] BuildPacket(byte command, byte[] payload)
         {
             var packet = new List<byte>();
-            packet.Add(Prefix);
-            packet.Add(command);
+            packet.Add(Prefix);         // 0xAA
+            packet.Add(command);        // command type (0x02=power, 0x03=color/preset)
+            packet.Add((byte)payload.Length);  // LENGTH byte (was missing!)
             packet.AddRange(payload);
             byte checksum = (byte)(packet.Sum(b => b) % 256);
             packet.Add(checksum);
