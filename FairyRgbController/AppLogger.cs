@@ -1,13 +1,12 @@
 using System;
 using System.IO;
+using System.Reflection;
 
 namespace FairyRgbController
 {
     public static class AppLogger
     {
-        private static readonly string LogPath = Path.Combine(
-            Path.GetTempPath(),
-            "FairyRgbController.log");
+        private static readonly string LogPath;
 
         private static readonly object _lock = new();
 
@@ -15,15 +14,21 @@ namespace FairyRgbController
         {
             try
             {
-                // Clear log on each app start
+                // Write log next to the .exe file
+                string? exeDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+                if (string.IsNullOrEmpty(exeDir))
+                    exeDir = Environment.CurrentDirectory;
+                LogPath = Path.Combine(exeDir, "FairyRgbController.log");
+
                 if (File.Exists(LogPath))
                     File.Delete(LogPath);
                 WriteLine("=== Fairy RGB Controller Log ===");
                 WriteLine($"Started: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
                 WriteLine($"OS: {Environment.OSVersion}");
                 WriteLine($".NET: {Environment.Version}");
+                WriteLine($"Exe path: {Assembly.GetExecutingAssembly().Location}");
             }
-            catch { /* Can't log if we can't write */ }
+            catch { LogPath = "FairyRgbController.log"; }
         }
 
         public static void WriteLine(string message)
