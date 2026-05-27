@@ -259,15 +259,21 @@ namespace FairyRgbController
         {
             if (_isUpdatingSliders) return;
             _isUpdatingSliders = true;
-            HueValue.Text = $"{(int)HueSlider.Value}°";
-            SatValue.Text = $"{(int)(SatSlider.Value / 10)}%";
-            ValValue.Text = $"{(int)(ValSlider.Value / 10)}%";
-            UpdateColorPreview();
-            _isUpdatingSliders = false;
+            try
+            {
+                if (HueValue != null) HueValue.Text = $"{(int)HueSlider.Value}°";
+                if (SatValue != null) SatValue.Text = $"{(int)(SatSlider.Value / 10)}%";
+                if (ValValue != null) ValValue.Text = $"{(int)(ValSlider.Value / 10)}%";
+                UpdateColorPreview();
+            }
+            catch { /* ignore during init */ }
+            finally { _isUpdatingSliders = false; }
         }
 
         private void UpdateColorPreview()
         {
+            if (ColorPreview == null || HueSlider == null || SatSlider == null || ValSlider == null) return;
+
             double h = HueSlider.Value;
             double s = SatSlider.Value / 1000.0;
             double v = ValSlider.Value / 1000.0;
