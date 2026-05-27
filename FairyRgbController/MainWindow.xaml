@@ -2,10 +2,110 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Fairy RGB Controller"
-        Height="500" Width="800"
+        Height="620" Width="900"
         WindowStartupLocation="CenterScreen"
-        Background="#0D0D1A"
+        Background="#0A0A1A"
         Foreground="White">
+    <Window.Resources>
+        <Style x:Key="AccentButton" TargetType="Button">
+            <Setter Property="Background" Value="#0F3460"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="6" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#1A4A80"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.4"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="PresetButton" TargetType="Button" BasedOn="{StaticResource AccentButton}">
+            <Setter Property="Width" Value="72"/>
+            <Setter Property="Height" Value="72"/>
+            <Setter Property="Margin" Value="3"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}"
+                                CornerRadius="8" Padding="4">
+                            <Border.Effect>
+                                <DropShadowEffect ShadowDepth="2" BlurRadius="6" Opacity="0.3"/>
+                            </Border.Effect>
+                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <TextBlock x:Name="Icon" Text="{Binding Tag, RelativeSource={RelativeSource TemplatedParent}}"
+                                           FontSize="24" HorizontalAlignment="Center"/>
+                                <ContentPresenter HorizontalAlignment="Center" Margin="0,2,0,0"/>
+                            </StackPanel>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#2A5A90"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.4"/>
+                            </Trigger>
+                            <Trigger Property="Tag" Value="None">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="QuickColorButton" TargetType="Button">
+            <Setter Property="Width" Value="36"/>
+            <Setter Property="Height" Value="36"/>
+            <Setter Property="Margin" Value="3"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="BorderBrush" Value="#333355"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}"
+                                CornerRadius="18" BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}">
+                            <Border.Effect>
+                                <DropShadowEffect ShadowDepth="1" BlurRadius="4" Opacity="0.4"/>
+                            </Border.Effect>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="White"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="SavedColorButton" TargetType="Button" BasedOn="{StaticResource QuickColorButton}">
+            <Setter Property="Width" Value="40"/>
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="Margin" Value="2"/>
+        </Style>
+        <Style x:Key="SectionTitle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Foreground" Value="#8888AA"/>
+            <Setter Property="Margin" Value="0,0,0,6"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="LetterSpacing" Value="1"/>
+        </Style>
+    </Window.Resources>
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -15,43 +115,307 @@
 
         <!-- Header -->
         <Border Grid.Row="0" Background="#12122A" Padding="16,10">
-            <TextBlock FontSize="20" FontWeight="Bold">🧚 Fairy RGB Controller</TextBlock>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="🧚" FontSize="22" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                    <TextBlock FontSize="18" FontWeight="Bold" VerticalAlignment="Center">Fairy RGB Controller</TextBlock>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock x:Name="StatusLabel" Text="Odottamassa..." FontSize="11" Foreground="#6666AA" VerticalAlignment="Center" Margin="0,0,16,0"/>
+                    <Ellipse x:Name="ConnectionDot" Width="10" Height="10" Fill="#444" Margin="0,0,6,0"/>
+                    <TextBlock x:Name="HeaderStatus" Text="Disconnected" FontSize="12" Foreground="#8888AA" VerticalAlignment="Center"/>
+                </StackPanel>
+            </Grid>
         </Border>
 
-        <!-- Main -->
+        <!-- Main Content: 3 Columns -->
         <Grid Grid.Row="1" Margin="10">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="210"/>
                 <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="230"/>
             </Grid.ColumnDefinitions>
 
-            <!-- Left: Devices -->
-            <Border Grid.Column="0" Background="#1A1A2E" CornerRadius="8" Padding="10" MinWidth="200">
-                <StackPanel>
-                    <TextBlock FontSize="13" Foreground="#8888AA" Margin="0,0,0,8">📡 FAIRY DEVICES</TextBlock>
-                    <Button x:Name="ScanButton" Content="🔄 Scan" Click="ScanButton_Click" Height="36" Background="#0F3460" BorderThickness="0" Margin="0,0,0,8"/>
-                    <ListBox x:Name="DevicesListBox" Background="#12122A" Foreground="White" Height="200"
-                             DisplayMemberPath="Name" SelectionChanged="DevicesListBox_SelectionChanged"/>
-                    <Button x:Name="ConnectButton" Content="🔗 Connect" Click="ConnectButton_Click" Height="36" Margin="0,8,0,0"
-                            Background="#4CAF50" BorderThickness="0" IsEnabled="False"/>
-                    <Button x:Name="DisconnectButton" Content="⏹ Disconnect" Click="DisconnectButton_Click" Height="36" Margin="0,4,0,0"
-                            Background="#3A1A2E" BorderThickness="0" IsEnabled="False"/>
-                </StackPanel>
+            <!-- LEFT: Devices Panel -->
+            <Border Grid.Column="0" Background="#1A1A2E" CornerRadius="8" Padding="10" Margin="0,0,5,0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0" Text="📡 LAITTEET" FontSize="11" Foreground="#8888AA"
+                               FontWeight="SemiBold" Margin="0,0,0,8"/>
+
+                    <Button x:Name="ScanButton" Content="🔄 Hae laitteita"
+                            Click="ScanButton_Click" Height="36"
+                            Background="#0F3460" BorderThickness="0" Margin="0,0,0,8"
+                            IsEnabled="True"/>
+
+                    <ListBox x:Name="DevicesListBox" Grid.Row="2"
+                             Background="#12122A" Foreground="White"
+                             Height="180" Margin="0,0,0,8"
+                             DisplayMemberPath="Name"/>
+
+                    <StackPanel Grid.Row="3">
+                        <Button x:Name="ConnectButton" Content="🔗 Yhdistä"
+                                Click="ConnectButton_Click" Height="36"
+                                Background="#1E3A1E" BorderThickness="0" Margin="0,0,0,4"
+                                IsEnabled="False"/>
+                        <Button x:Name="DisconnectButton" Content="⏹ Irrota"
+                                Click="DisconnectButton_Click" Height="36"
+                                Background="#3A1A2E" BorderThickness="0"
+                                IsEnabled="False"/>
+
+                        <!-- Device Info when connected -->
+                        <Border x:Name="DeviceInfoPanel" Background="#0F1A0F"
+                                CornerRadius="6" Padding="8" Margin="0,8,0,0"
+                                Visibility="Collapsed">
+                            <StackPanel>
+                                <TextBlock x:Name="ConnectedDeviceName" FontSize="11" Foreground="#88CC88"/>
+                                <TextBlock x:Name="ConnectedStatus" Text="⚡ Yhdistetty" FontSize="11" Foreground="#55AA55" Margin="0,2,0,0"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Grid>
             </Border>
 
-            <!-- Right: Status -->
-            <Border Grid.Column="1" Background="#1A1A2E" CornerRadius="8" Padding="10" Margin="10,0,0,0">
-                <StackPanel>
-                    <TextBlock x:Name="StatusLabel" Text="Waiting..." FontSize="14" Margin="0,0,0,10"/>
-                    <TextBlock x:Name="ActionFeedback" Text="Press Scan to start" FontSize="12" Foreground="#8888AA"/>
-                </StackPanel>
+            <!-- CENTER: Color Picker -->
+            <Border Grid.Column="1" Background="#1A1A2E" CornerRadius="8" Padding="14" Margin="5,0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0" Text="🎨 VÄRI" FontSize="11" Foreground="#8888AA"
+                               FontWeight="SemiBold" Margin="0,0,0,10"/>
+
+                    <!-- Color Preview + Quick Colors -->
+                    <Grid Grid.Row="1" Margin="0,0,0,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Preview swatch -->
+                        <Border x:Name="ColorPreview" Width="70" Height="70"
+                                CornerRadius="8" Background="White" Margin="0,0,12,0">
+                            <Border.Effect>
+                                <DropShadowEffect ShadowDepth="2" BlurRadius="12" Opacity="0.5"/>
+                            </Border.Effect>
+                        </Border>
+
+                        <!-- Quick color buttons -->
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock Text="PIKAVÄRIT" FontSize="10" Foreground="#666688" Margin="0,0,0,6"/>
+                            <WrapPanel>
+                                <Button Style="{StaticResource QuickColorButton}" Background="White"
+                                        ToolTip="Valkoinen" Click="QuickColor_Click" Tag="255,255,255"/>
+                                <Button Style="{StaticResource QuickColorButton}" Background="Red"
+                                        ToolTip="Punainen" Click="QuickColor_Click" Tag="255,0,0"/>
+                                <Button Style="{StaticResource QuickColorButton}" Background="Lime"
+                                        ToolTip="Vihreä" Click="QuickColor_Click" Tag="0,255,0"/>
+                                <Button Style="{StaticResource QuickColorButton}" Background="Blue"
+                                        ToolTip="Sininen" Click="QuickColor_Click" Tag="0,0,255"/>
+                                <Button Style="{StaticResource QuickColorButton}" Background="Yellow"
+                                        ToolTip="Keltainen" Click="QuickColor_Click" Tag="255,255,0"/>
+                                <Button Style="{StaticResource QuickColorButton}" Background="#FF00FF"
+                                        ToolTip="Magenta" Click="QuickColor_Click" Tag="255,0,255"/>
+                                <Button Style="{StaticResource QuickColorButton}" Background="#00FFFF"
+                                        ToolTip="Cyani" Click="QuickColor_Click" Tag="0,255,255"/>
+                                <Button Style="{StaticResource QuickColorButton}" Background="Orange"
+                                        ToolTip="Oranssi" Click="QuickColor_Click" Tag="255,165,0"/>
+                                <Button Style="{StaticResource QuickColorButton}" Background="#FF6600"
+                                        ToolTip="Tumma oranssi" Click="QuickColor_Click" Tag="255,102,0"/>
+                                <Button Style="{StaticResource QuickColorButton}" Background="#AA00FF"
+                                        ToolTip="Violetti" Click="QuickColor_Click" Tag="170,0,255"/>
+                            </WrapPanel>
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- Hue Slider -->
+                    <StackPanel Grid.Row="2" Margin="0,0,0,6">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="60"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="40"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="Sävy (H)" FontSize="11" Foreground="#8888AA" VerticalAlignment="Center"/>
+                            <Slider x:Name="HueSlider" Grid.Column="1" Minimum="0" Maximum="360"
+                                    Value="180" VerticalAlignment="Center" Margin="8,0"
+                                    ValueChanged="HsvSlider_ValueChanged"/>
+                            <TextBlock x:Name="HueValue" Grid.Column="2" Text="180°" FontSize="11"
+                                       Foreground="#AAAAAA" VerticalAlignment="Center"/>
+                        </Grid>
+                        <!-- Hue gradient bar -->
+                        <Border Height="16" CornerRadius="8" Margin="60,4,40,0">
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                    <GradientStop Color="#FF0000" Offset="0"/>
+                                    <GradientStop Color="#FFFF00" Offset="0.167"/>
+                                    <GradientStop Color="#00FF00" Offset="0.333"/>
+                                    <GradientStop Color="#00FFFF" Offset="0.5"/>
+                                    <GradientStop Color="#0000FF" Offset="0.667"/>
+                                    <GradientStop Color="#FF00FF" Offset="0.833"/>
+                                    <GradientStop Color="#FF0000" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.Background>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- Saturation Slider -->
+                    <StackPanel Grid.Row="3" Margin="0,0,0,6">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="60"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="40"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="Kylläisyys (S)" FontSize="11" Foreground="#8888AA" VerticalAlignment="Center"/>
+                            <Slider x:Name="SatSlider" Grid.Column="1" Minimum="0" Maximum="1000"
+                                    Value="1000" VerticalAlignment="Center" Margin="8,0"
+                                    ValueChanged="HsvSlider_ValueChanged"/>
+                            <TextBlock x:Name="SatValue" Grid.Column="2" Text="100%" FontSize="11"
+                                       Foreground="#AAAAAA" VerticalAlignment="Center"/>
+                        </Grid>
+                    </StackPanel>
+
+                    <!-- Brightness/Value Slider -->
+                    <StackPanel Grid.Row="4">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="60"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="40"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="Kirkkaus (V)" FontSize="11" Foreground="#8888AA" VerticalAlignment="Center"/>
+                            <Slider x:Name="ValSlider" Grid.Column="1" Minimum="100" Maximum="1000"
+                                    Value="1000" VerticalAlignment="Center" Margin="8,0"
+                                    ValueChanged="HsvSlider_ValueChanged"/>
+                            <TextBlock x:Name="ValValue" Grid.Column="2" Text="100%" FontSize="11"
+                                       Foreground="#AAAAAA" VerticalAlignment="Center"/>
+                        </Grid>
+                        <!-- Value gradient bar (black to white) -->
+                        <Border Height="8" CornerRadius="4" Margin="60,4,40,0">
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                    <GradientStop Color="Black" Offset="0"/>
+                                    <GradientStop Color="White" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.Background>
+                        </Border>
+
+                        <!-- Apply Color Button -->
+                        <Button x:Name="ApplyColorButton" Content="💡 Ota väri käyttöön"
+                                Click="ApplyColor_Click" Height="40" Margin="0,12,0,0"
+                                Background="#1E4A2E" BorderThickness="0"
+                                IsEnabled="False" FontSize="13" FontWeight="SemiBold"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- RIGHT: Presets + Saved -->
+            <Border Grid.Column="2" Background="#1A1A2E" CornerRadius="8" Padding="10" Margin="5,0,0,0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Preset Modes -->
+                    <TextBlock Grid.Row="0" Text="✨ EFFEKTIT" FontSize="11" Foreground="#8888AA"
+                               FontWeight="SemiBold" Margin="0,0,0,8"/>
+
+                    <WrapPanel x:Name="PresetButtons" Grid.Row="1" Margin="0,0,0,10">
+                        <!-- Presets will be added in code-behind -->
+                    </WrapPanel>
+
+                    <!-- Mode Description -->
+                    <Border Grid.Row="2" Background="#12122A" CornerRadius="6" Padding="8" Margin="0,0,0,10">
+                        <TextBlock x:Name="ModeDescription" Text="Valitse tehoste"
+                                   FontSize="11" Foreground="#6666AA" TextWrapping="Wrap"
+                                   TextAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+
+                    <!-- Saved Colors -->
+                    <Grid Grid.Row="3">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="⭐ OMAT VÄRIT" FontSize="11" Foreground="#8888AA"
+                                   FontWeight="SemiBold" Margin="0,0,0,6" VerticalAlignment="Center"/>
+                        <Button x:Name="SaveCurrentColorButton" Grid.Column="1" Content="+ Tallenna"
+                                Click="SaveCurrentColor_Click" Height="24"
+                                Padding="8,2" FontSize="10"
+                                Background="#2A2A4A" BorderThickness="0"
+                                IsEnabled="False"/>
+                    </Grid>
+
+                    <ScrollViewer Grid.Row="4" VerticalScrollBarVisibility="Auto" MaxHeight="160">
+                        <WrapPanel x:Name="SavedColorsPanel">
+                            <!-- Saved colors appear here -->
+                        </WrapPanel>
+                    </ScrollViewer>
+                </Grid>
             </Border>
         </Grid>
 
-        <!-- Bottom -->
-        <Border Grid.Row="2" Background="#12122A" Padding="10">
-            <Button x:Name="PowerButton" Content="🔛 TURN ON" Click="PowerButton_Click"
-                    Width="130" Height="34" Background="#2A4A2E" BorderThickness="0" IsEnabled="False"/>
+        <!-- Bottom Bar -->
+        <Border Grid.Row="2" Background="#12122A" Padding="12,10">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Power Button -->
+                <Button x:Name="PowerButton" Content="🔴 OFF"
+                        Click="PowerButton_Click"
+                        Width="130" Height="36"
+                        Background="#1E1E1E" BorderThickness="0"
+                        FontSize="13" FontWeight="Bold"
+                        IsEnabled="False"/>
+
+                <!-- Status text -->
+                <TextBlock x:Name="ActionFeedback" Grid.Column="1"
+                           Text="Yhdistä laitteeseen aloittaaksesi"
+                           FontSize="12" Foreground="#6666AA"
+                           VerticalAlignment="Center" Margin="20,0"/>
+
+                <!-- Brightness Slider (global) -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,20,0">
+                    <TextBlock Text="☀" FontSize="14" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                    <Slider x:Name="BrightnessSlider" Minimum="50" Maximum="1000"
+                            Value="1000" Width="120"
+                            VerticalAlignment="Center"
+                            ValueChanged="BrightnessSlider_ValueChanged"/>
+                    <TextBlock x:Name="BrightnessValue" Text="100%" FontSize="11"
+                               Foreground="#AAAAAA" VerticalAlignment="Center" Margin="8,0,0,0" Width="35"/>
+                </StackPanel>
+
+                <!-- Quick Off -->
+                <Button x:Name="QuickOffButton" Grid.Column="3" Content="💤 Sammuta"
+                        Click="QuickOff_Click" Height="36"
+                        Padding="12,0" Background="#2A1A1A"
+                        BorderThickness="0" IsEnabled="False" FontSize="12"/>
+            </Grid>
         </Border>
     </Grid>
 </Window>
