@@ -21,20 +21,25 @@ namespace FairyRgbController
         private List<SavedColor> _savedColors = new();
         private bool _isUpdatingSliders;
 
-        // Preset definitions - verified working IDs on F15C
+        // Preset definitions - sequential IDs 1-16 (tested on F15C)
+// ID 01 = Valkoinen (verified white)
+// ID 08 = Kurpitsa (verified pumpkin)  
+// ID 12 = Kukka (verified flower)
+// ID 20 = Sydän (verified heart)
+// Other IDs need testing - see EFFECTS.md for full list
         private static readonly PresetDef[] Presets = new PresetDef[]
         {
             new PresetDef(1,  "Valkoinen",     "⚪", "Kiinteä valkoinen valo"),
-            new PresetDef(2,  "Punainen",      "🔴", "Punainen kiinteä"),
-            new PresetDef(3,  "Vihreä",        "🟢", "Vihreä kiinteä"),
-            new PresetDef(4,  "Sininen",        "🔵", "Sininen kiinteä"),
-            new PresetDef(5,  "Keltainen",     "🟡", "Keltainen kiinteä"),
-            new PresetDef(6,  "Violetti",      "🟣", "Violetti kiinteä"),
-            new PresetDef(7,  "Oranssi",       "🟠", "Oranssi kiinteä"),
+            new PresetDef(2,  "Punainen",      "🔴", "Punainen valo"),
+            new PresetDef(3,  "Vihreä",        "🟢", "Vihreä valo"),
+            new PresetDef(4,  "Sininen",       "🔵", "Sininen valo"),
+            new PresetDef(5,  "Keltainen",     "🟡", "Keltainen valo"),
+            new PresetDef(6,  "Violetti",      "🟣", "Violetti valo"),
+            new PresetDef(7,  "Oranssi",       "🟠", "Oranssi valo"),
             new PresetDef(8,  "Kurpitsa",      "🎃", "Halloween kurpitsa"),
-            new PresetDef(9,  "Hengitys",      "💨", "Pehmeä hengitys-efekti"),
+            new PresetDef(9,  "Lumihiutale",   "❄️", "Lumihiutale kuvio"),
             new PresetDef(10, "Sydän",         "❤️", "Sydän joka sykkii"),
-            new PresetDef(11, "Lumihiutale",   "❄️", "Lumihiutale kuvio"),
+            new PresetDef(11, "Ruusu",         "🌹", "Ruusu kukka"),
             new PresetDef(12, "Kukka",         "🌸", "Kukka kuvio"),
             new PresetDef(13, "Taivas",        "🌌", "Tähtitaivas"),
             new PresetDef(14, "Aalto",         "🌊", "Aaltomainen liike"),
@@ -498,10 +503,20 @@ namespace FairyRgbController
 
         #region Brightness
 
+        private DateTime _lastBrightnessSend = DateTime.MinValue;
+        private const int BRIGHTNESS_DEBOUNCE_MS = 50;
+
         private async void BrightnessSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             if (BrightnessValue == null || BrightnessSlider == null) return;
             BrightnessValue.Text = $"{(int)(BrightnessSlider.Value / 10)}%";
+            
+            // Debounce rapid slider movements
+            var now = DateTime.Now;
+            if ((now - _lastBrightnessSend).TotalMilliseconds < BRIGHTNESS_DEBOUNCE_MS)
+                return;
+            _lastBrightnessSend = now;
+            
             if (_isPowerOn && DisconnectButton.IsEnabled)
             {
                 await _fairyService.SetPresetAsync(_selectedPresetId, (int)BrightnessSlider.Value);
