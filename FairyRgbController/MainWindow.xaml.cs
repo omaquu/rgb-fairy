@@ -135,6 +135,13 @@ namespace FairyRgbController
             try
             {
                 await _fairyService.ConnectAsync(_selectedDevice);
+                // Enable controls after successful connection
+                DisconnectButton.IsEnabled = true;
+                PowerButton.IsEnabled = true;
+                ApplyColorButton.IsEnabled = true;
+                SaveCurrentColorButton.IsEnabled = true;
+                QuickOffButton.IsEnabled = true;
+                ActionFeedback.Text = $"Yhdistetty: {_selectedDevice.Name}";
             }
             catch (Exception ex)
             {
@@ -332,18 +339,21 @@ namespace FairyRgbController
             }
 
             int brightness = (int)Math.Max(100, BrightnessSlider.Value);
-            try
-            {
-                await _fairyService.SetPresetAsync(_selectedPresetId, brightness);
-                ActionFeedback.Text = $"Tehostus {_selectedPresetId} käytössä (kirkkaus {brightness / 10}%)";
-            }
-            catch
+
+            // Preset ID 1 = "Kiinteä" (Fixed color) - send HSV color command instead
+            if (_selectedPresetId == 1)
             {
                 int h = (int)(HueSlider.Value / 360.0 * 65535);
                 int s = (int)SatSlider.Value;
-                int v = (int)ValSlider.Value;
+                int v = (int)(ValSlider.Value * brightness / 1000.0);
                 await _fairyService.SetHsvAsync(h, s, v);
-                ActionFeedback.Text = "Väri asetettu!";
+                ActionFeedback.Text = $"Väri asetettu! (kirkkaus {brightness / 10}%)";
+            }
+            else
+            {
+                // Other presets = effects
+                await _fairyService.SetPresetAsync(_selectedPresetId, brightness);
+                ActionFeedback.Text = $"Tehostus {_selectedPresetId} käytössä (kirkkaus {brightness / 10}%)";
             }
         }
 

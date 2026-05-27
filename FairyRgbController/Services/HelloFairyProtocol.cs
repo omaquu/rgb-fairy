@@ -52,8 +52,9 @@ namespace FairyRgbController.Services
             var payload = new byte[4];
             payload[0] = ModePreset;
             payload[1] = presetId;
-            payload[2] = (byte)(brightness & 0xFF);
-            payload[3] = (byte)((brightness >> 8) & 0xFF);
+            // Big-endian: high byte first, then low byte
+            payload[2] = (byte)((brightness >> 8) & 0xFF);
+            payload[3] = (byte)(brightness & 0xFF);
             return BuildPacket(CmdColorPreset, payload);
         }
     }
