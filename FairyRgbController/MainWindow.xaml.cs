@@ -185,10 +185,10 @@ public MainWindow()
             else if (h < 300) { r = x; g = 0; b = c; }
             else { r = c; g = 0; b = x; }
 
-            ColorPreviewBrush.Color = Color.FromRgb(
+            ColorPreview.Background = new SolidColorBrush(Color.FromRgb(
                 (byte)((r + m) * 255),
                 (byte)((g + m) * 255),
-                (byte)((b + m) * 255));
+                (byte)((b + m) * 255)));
         }
 
         // ═══ PRESET COLORS ═══
