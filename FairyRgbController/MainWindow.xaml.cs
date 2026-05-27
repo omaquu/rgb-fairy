@@ -20,26 +20,26 @@ namespace FairyRgbController
         private List<SavedColor> _savedColors = new();
         private bool _isUpdatingSliders;
 
-        // Preset mode definitions
-        private static readonly (byte id, string name, string icon, string desc)[] Presets = new[]
+        // Preset mode definitions (id, name, icon, description)
+        private static readonly PresetDef[] Presets = new PresetDef[]
         {
-            (1,  "Kiinteä",           "💡", "Yksi väri, ei tehostetta"),
-                (2,  "Hengitä",           "🌫", "Pehmeä sisään/ulos-hengitys"),
-                (3,  "Värihyppy",         "🔀", "Hyppii satunnaisesti värien välillä"),
-                (4,  "Aalto",             "🌊", "Väri kulkee aaltomaisesti"),
-                (5,  "Stroboskooppi",     "⚡", "Nopea välkyntä"),
-                (6,  "Heikkeneminen",     "💨", "Värit himmentyvät pehmeästi"),
-                (7,  "Sadekaari",         "🌈", "Sateenkaari-pyörteinen"),
-                (8,  "7 väriä",           "🎆", "Kaikki 7 väriä vuorotellen"),
-                (9,  "RGB-ajo",           "🔁", "RGB-värien ajosykli"),
-                (10, "DIY 1",             "1️⃣", "Räätälöity tila 1"),
-                (11, "DIY 2",             "2️⃣", "Räätälöity tila 2"),
-                (12, "Räjähtävä",         "💥", "Värit räjähtävät ulos"),
-                (13, "Virtaava",          "➡",  "Virtaava yhden suuntainen"),
-                (14, "Jazz",              "🎷", "Värikäs jazz"),
-                (15, "Disco",             "🪩", "Disco-tehoste"),
-                (16, "Valoisa",           "☀", "Kirkas valo"),
-            }];
+            new PresetDef(1,  "Kiinteä",        "💡", "Yksi väri, ei tehostetta"),
+            new PresetDef(2,  "Hengitä",        "🌫", "Pehmeä sisään/ulos-hengitys"),
+            new PresetDef(3,  "Värihyppy",      "🔀", "Hyppii satunnaisesti värien välillä"),
+            new PresetDef(4,  "Aalto",          "🌊", "Väri kulkee aaltomaisesti"),
+            new PresetDef(5,  "Stroboskooppi",  "⚡", "Nopea välkyntä"),
+            new PresetDef(6,  "Heikkeneminen",  "💨", "Värit himmentyvät pehmeästi"),
+            new PresetDef(7,  "Sadekaari",      "🌈", "Sateenkaari-pyörteinen"),
+            new PresetDef(8,  "7 väriä",        "🎆", "Kaikki 7 väriä vuorotellen"),
+            new PresetDef(9,  "RGB-ajo",        "🔁", "RGB-värien ajosykli"),
+            new PresetDef(10, "DIY 1",          "1️⃣", "Räätälöity tila 1"),
+            new PresetDef(11, "DIY 2",          "2️⃣", "Räätälöity tila 2"),
+            new PresetDef(12, "Räjähtävä",      "💥", "Värit räjähtävät ulos"),
+            new PresetDef(13, "Virtaava",       "➡",  "Virtaava yhden suuntainen"),
+            new PresetDef(14, "Jazz",           "🎷", "Värikäs jazz"),
+            new PresetDef(15, "Disco",          "🪩", "Disco-tehoste"),
+            new PresetDef(16, "Valoisa",        "☀", "Kirkas valo"),
+        };
 
         public MainWindow()
         {
@@ -94,7 +94,6 @@ namespace FairyRgbController
             ConnectionDot.Fill = new SolidColorBrush(Color.FromRgb(0x44, 0xFF, 0x88));
             StatusLabel.Text = $"Yhdistetty: {device.Name}";
             ActionFeedback.Text = $"{device.Name} valmiina — säädä väriä!";
-            QuickOffButton.IsEnabled = true;
         }
 
         private async void ScanButton_Click(object sender, RoutedEventArgs e)
@@ -168,8 +167,10 @@ namespace FairyRgbController
         {
             _isPowerOn = !_isPowerOn;
             PowerButton.Content = _isPowerOn ? "🟢 ON" : "🔴 OFF";
-            PowerButton.Background = _isPowerOn
-                : new SolidColorBrush(Color.FromRgb(0x1E, 0x1E, 0x1E));
+            if (_isPowerOn)
+                PowerButton.Background = new SolidColorBrush(Color.FromRgb(0x1E, 0x4A, 0x2E));
+            else
+                PowerButton.Background = new SolidColorBrush(Color.FromRgb(0x1E, 0x1E, 0x1E));
             await _fairyService.SetPowerAsync(_isPowerOn);
         }
 
@@ -177,6 +178,7 @@ namespace FairyRgbController
         {
             _isPowerOn = false;
             PowerButton.Content = "🔴 OFF";
+            PowerButton.Background = new SolidColorBrush(Color.FromRgb(0x1E, 0x1E, 0x1E));
             await _fairyService.SetPowerAsync(false);
             ActionFeedback.Text = "Valot sammutettu";
         }
@@ -196,25 +198,23 @@ namespace FairyRgbController
                     {
                         Children =
                         {
-                            new TextBlock { Text = preset.icon, FontSize = 22, HorizontalAlignment = HorizontalAlignment.Center },
-                            new TextBlock { Text = preset.name, FontSize = 9, HorizontalAlignment = HorizontalAlignment.Center, Foreground = Brushes.White }
+                            new TextBlock { Text = preset.Icon, FontSize = 22, HorizontalAlignment = HorizontalAlignment.Center },
+                            new TextBlock { Text = preset.Name, FontSize = 9, HorizontalAlignment = HorizontalAlignment.Center, Foreground = Brushes.White }
                         }
                     },
-                    Tag = preset.id,
+                    Tag = preset.Id,
                     Width = 68,
                     Height = 68,
                     Margin = new Thickness(2),
                     Background = new SolidColorBrush(Color.FromRgb(0x0F, 0x34, 0x60)),
                     Foreground = Brushes.White,
                     BorderThickness = new Thickness(0),
-                    ToolTip = preset.desc,
-                    FontSize = 1
+                    ToolTip = preset.Desc
                 };
                 btn.Click += PresetButton_Click;
                 PresetButtons.Children.Add(btn);
             }
 
-            // Select first preset
             if (PresetButtons.Children.Count > 0)
                 SelectPreset(1);
         }
@@ -222,13 +222,11 @@ namespace FairyRgbController
         private void SelectPreset(byte id)
         {
             _selectedPresetId = id;
-            var preset = Presets.FirstOrDefault(p => p.id == id);
-            ModeDescription.Text = preset.desc ?? "";
+            var preset = Presets.FirstOrDefault(p => p.Id == id);
             ModeDescription.Inlines.Clear();
-            ModeDescription.Inlines.Add(new System.Windows.Documents.Run(preset.icon + " ") { FontSize = 16 });
-            ModeDescription.Inlines.Add(new System.Windows.Documents.Run(preset.desc ?? ""));
+            ModeDescription.Inlines.Add(new System.Windows.Documents.Run(preset?.Icon + " ") { FontSize = 16 });
+            ModeDescription.Inlines.Add(new System.Windows.Documents.Run(preset?.Desc ?? ""));
 
-            // Highlight selected
             foreach (Button btn in PresetButtons.Children)
             {
                 if (btn.Tag is byte tag && tag == id)
@@ -300,8 +298,8 @@ namespace FairyRgbController
                     SatSlider.Value = s;
                     ValSlider.Value = v;
                     HueValue.Text = $"{(int)h}°";
-                    SatValue.Text = $"{(int)(s/10)}%";
-                    ValValue.Text = $"{(int)(v/10)}%";
+                    SatValue.Text = $"{(int)(s / 10)}%";
+                    ValValue.Text = $"{(int)(v / 10)}%";
                     _isUpdatingSliders = false;
                     UpdateColorPreview();
                     await ApplyCurrentColorOrPreset();
@@ -316,15 +314,14 @@ namespace FairyRgbController
 
         private async Task ApplyCurrentColorOrPreset()
         {
-            // First ensure power is on
             if (!_isPowerOn)
             {
                 _isPowerOn = true;
                 PowerButton.Content = "🟢 ON";
+                PowerButton.Background = new SolidColorBrush(Color.FromRgb(0x1E, 0x4A, 0x2E));
                 await _fairyService.SetPowerAsync(true);
             }
 
-            // Apply preset mode with current brightness
             int brightness = (int)Math.Max(100, BrightnessSlider.Value);
             try
             {
@@ -333,7 +330,6 @@ namespace FairyRgbController
             }
             catch
             {
-                // Fallback: try direct color
                 int h = (int)(HueSlider.Value / 360.0 * 65535);
                 int s = (int)SatSlider.Value;
                 int v = (int)ValSlider.Value;
@@ -370,9 +366,10 @@ namespace FairyRgbController
 
         private void SaveCurrentColor_Click(object sender, RoutedEventArgs e)
         {
-            byte r = (byte)((ColorPreview.Background as SolidColorBrush)?.Color.R ?? 255);
-            byte g = (byte)((ColorPreview.Background as SolidColorBrush)?.Color.G ?? 255);
-            byte b = (byte)((ColorPreview.Background as SolidColorBrush)?.Color.B ?? 255);
+            var brush = ColorPreview.Background as SolidColorBrush;
+            byte r = brush?.Color.R ?? 255;
+            byte g = brush?.Color.G ?? 255;
+            byte b = brush?.Color.B ?? 255;
 
             var color = new SavedColor
             {
@@ -383,7 +380,7 @@ namespace FairyRgbController
             _savedColors.Add(color);
             BuildSavedColorButtons();
             SaveSavedColors();
-            ActionFeedback.Text = $"Väri tallennettu ({r},{g},{b})";
+            ActionFeedback.Text = $"Väri tallennettu #{r:X2}{g:X2}{b:X2}";
         }
 
         private void BuildSavedColorButtons()
@@ -401,13 +398,29 @@ namespace FairyRgbController
                     Tag = i,
                     ToolTip = $"#{sc.R:X2}{sc.G:X2}{sc.B:X2}",
                     Cursor = Cursors.Hand,
+                    ContextMenu = new ContextMenu
+                    {
+                        Items =
+                        {
+                            new MenuItem
+                            {
+                                Header = "Poista",
+                                Tag = i
+                            }
+                        }
+                    }
                 };
                 btn.Click += SavedColorButton_Click;
-                var ctxMenu = new ContextMenu();
-                var mi = new MenuItem { Header = "Poista" };
-                mi.Click += (s, e) => { _savedColors.RemoveAt(i); BuildSavedColorButtons(); SaveSavedColors(); };
-                ctxMenu.Items.Add(mi);
-                btn.ContextMenu = ctxMenu;
+                // Wire up the context menu delete
+                if (btn.ContextMenu.Items[0] is MenuItem mi)
+                    mi.Click += (s, ev) =>
+                    {
+                        var mi2 = (MenuItem)s!;
+                        var idx = (int)mi2.Tag;
+                        _savedColors.RemoveAt(idx);
+                        BuildSavedColorButtons();
+                        SaveSavedColors();
+                    };
                 SavedColorsPanel.Children.Add(btn);
             }
         }
@@ -458,7 +471,8 @@ namespace FairyRgbController
                     foreach (var line in lines)
                     {
                         var p = line.Split(',');
-                        if (p.Length >= 4 && byte.TryParse(p[0], out byte r)
+                        if (p.Length >= 4
+                            && byte.TryParse(p[0], out byte r)
                             && byte.TryParse(p[1], out byte g)
                             && byte.TryParse(p[2], out byte b)
                             && int.TryParse(p[3], out int h))
@@ -479,7 +493,6 @@ namespace FairyRgbController
         private async void BrightnessSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             BrightnessValue.Text = $"{(int)(BrightnessSlider.Value / 10)}%";
-            // Re-apply current preset with new brightness
             if (_isPowerOn && DisconnectButton.IsEnabled)
             {
                 await _fairyService.SetPresetAsync(_selectedPresetId, (int)BrightnessSlider.Value);
@@ -496,5 +509,21 @@ namespace FairyRgbController
         public byte B { get; set; }
         public int Hue { get; set; }
         public DateTime SavedAt { get; set; }
+    }
+
+    public class PresetDef
+    {
+        public byte Id { get; }
+        public string Name { get; }
+        public string Icon { get; }
+        public string Desc { get; }
+
+        public PresetDef(byte id, string name, string icon, string desc)
+        {
+            Id = id;
+            Name = name;
+            Icon = icon;
+            Desc = desc;
+        }
     }
 }
