@@ -59,7 +59,6 @@ namespace FairyRgbController
             _fairyService = new HelloFairyService();
             _fairyService.StatusChanged += (s, msg) => Dispatcher.Invoke(() => ActionFeedback.Text = msg);
             _fairyService.DevicesUpdated += OnDevicesUpdated;
-            _fairyService.AutoConnected += OnAutoConnected;
             AppLogger.WriteLine("INIT", "Events wired.");
             BuildPresetButtons();
             LoadSavedColors();
@@ -98,26 +97,9 @@ namespace FairyRgbController
                 _selectedDevice = devices[0];
                 ConnectButton.IsEnabled = true;
             }
-        }
+}
 
-        private void OnAutoConnected(object? sender, BleDeviceInfo device)
-        {
-            _selectedDevice = device;
-            ConnectButton.IsEnabled = false;
-            DisconnectButton.IsEnabled = true;
-            PowerButton.IsEnabled = true;
-            ApplyColorButton.IsEnabled = true;
-            SaveCurrentColorButton.IsEnabled = true;
-            QuickOffButton.IsEnabled = true;
-            DeviceInfoPanel.Visibility = Visibility.Visible;
-            ConnectedDeviceName.Text = device.Name;
-            HeaderStatus.Text = $"Yhdistetty: {device.Name}";
-            ConnectionDot.Fill = new SolidColorBrush(Color.FromRgb(0x44, 0xFF, 0x88));
-            StatusLabel.Text = $"Yhdistetty: {device.Name}";
-            ActionFeedback.Text = $"{device.Name} valmiina — säädä väriä!";
-        }
-
-        private async void ScanButton_Click(object sender, RoutedEventArgs e)
+        private void ScanButton_Click(object sender, RoutedEventArgs e)
         {
             ScanButton.IsEnabled = false;
             ScanButton.Content = "⏳ Skannataan...";
