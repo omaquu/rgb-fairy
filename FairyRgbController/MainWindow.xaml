@@ -270,12 +270,16 @@
                     </Grid.RowDefinitions>
 
                     <!-- Preset Modes -->
-                    <TextBlock Grid.Row="0" Text="✨ EFFEKTIT" FontSize="11" Foreground="#8888AA"
+                    <TextBlock Grid.Row="0" Text="✨ EFFEKTIT (58)" FontSize="11" Foreground="#8888AA"
                                FontWeight="SemiBold" Margin="0,0,0,8"/>
 
-                    <WrapPanel x:Name="PresetButtons" Grid.Row="1" Margin="0,0,0,10">
-                        <!-- Presets will be added in code-behind -->
-                    </WrapPanel>
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" 
+                                  HorizontalScrollBarVisibility="Disabled" Margin="0,0,0,10"
+                                  MaxHeight="300">
+                        <WrapPanel x:Name="PresetButtons">
+                            <!-- Presets will be added in code-behind -->
+                        </WrapPanel>
+                    </ScrollViewer>
 
                     <!-- Mode Description -->
                     <Border Grid.Row="2" Background="#12122A" CornerRadius="6" Padding="8" Margin="0,0,0,10">

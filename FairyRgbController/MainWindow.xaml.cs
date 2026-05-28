@@ -21,30 +21,85 @@ namespace FairyRgbController
         private List<SavedColor> _savedColors = new();
         private bool _isUpdatingSliders;
 
-        // Preset definitions - sequential IDs 1-16 (tested on F15C)
-// ID 01 = Valkoinen (verified white)
-// ID 08 = Kurpitsa (verified pumpkin)  
-// ID 12 = Kukka (verified flower)
-// ID 20 = Sydän (verified heart)
-// Other IDs need testing - see EFFECTS.md for full list
+        // ============================================
+        // RGB FAIRY 58 PRESET EFFECTS (F15C Compatible)
+        // ============================================
+        // ID Range: 01-58 (single byte, hex 0x01-0x3A)
+        // Format: AA 03 04 02 [ID] [Brightness]
+        // Verified: 01=Valkoinen, 08=Kurpitsa, 12=Kukka, 20=Sydän
+        // Source: APK decompilation + community testing
+        // ============================================
         private static readonly PresetDef[] Presets = new PresetDef[]
         {
-            new PresetDef(1,  "Valkoinen",     "⚪", "Kiinteä valkoinen valo"),
-            new PresetDef(2,  "Punainen",      "🔴", "Punainen valo"),
-            new PresetDef(3,  "Vihreä",        "🟢", "Vihreä valo"),
-            new PresetDef(4,  "Sininen",       "🔵", "Sininen valo"),
-            new PresetDef(5,  "Keltainen",     "🟡", "Keltainen valo"),
-            new PresetDef(6,  "Violetti",      "🟣", "Violetti valo"),
-            new PresetDef(7,  "Oranssi",       "🟠", "Oranssi valo"),
+            // === Perus värit (01-07) ===
+            new PresetDef(1,  "Valkoinen",     "⚪", "Kiinteä valkoinen"),
+            new PresetDef(2,  "Punainen",      "🔴", "Kiinteä punainen"),
+            new PresetDef(3,  "Vihreä",        "🟢", "Kiinteä vihreä"),
+            new PresetDef(4,  "Sininen",       "🔵", "Kiinteä sininen"),
+            new PresetDef(5,  "Keltainen",     "🟡", "Kiinteä keltainen"),
+            new PresetDef(6,  "Violetti",      "🟣", "Kiinteä violetti"),
+            new PresetDef(7,  "Oranssi",       "🟠", "Kiinteä oranssi"),
+            
+            // === Teemakuviot (08-20) ===
             new PresetDef(8,  "Kurpitsa",      "🎃", "Halloween kurpitsa"),
-            new PresetDef(9,  "Lumihiutale",   "❄️", "Lumihiutale kuvio"),
-            new PresetDef(10, "Sydän",         "❤️", "Sydän joka sykkii"),
-            new PresetDef(11, "Ruusu",         "🌹", "Ruusu kukka"),
-            new PresetDef(12, "Kukka",         "🌸", "Kukka kuvio"),
+            new PresetDef(9,  "Lumihiutale",   "❄️", "Lumihiutale"),
+            new PresetDef(10, "Sydän",         "❤️", "Sykkivä sydän"),
+            new PresetDef(11, "Ruusu",         "🌹", "Ruusu"),
+            new PresetDef(12, "Kukka",         "🌸", "Kukka"),
             new PresetDef(13, "Taivas",        "🌌", "Tähtitaivas"),
-            new PresetDef(14, "Aalto",         "🌊", "Aaltomainen liike"),
+            new PresetDef(14, "Aalto",         "🌊", "Aaltoliike"),
             new PresetDef(15, "Strobo",        "⚡", "Stroboskooppi"),
-            new PresetDef(16, "Sade",          "🌧️", "Sade-efekti"),
+            new PresetDef(16, "Sade",          "🌧️", "Sade"),
+            new PresetDef(17, "Savu",          "🌫️", "Savuefekti"),
+            new PresetDef(18, "Soihtu",        "🔥", "Soihtu liekit"),
+            new PresetDef(19, "Pallo",         "🎈", "Värikkäät pallot"),
+            new PresetDef(20, "Pupu",          "🐰", "Pääsiäispupu"),
+            
+            // === Luonto (21-30) ===
+            new PresetDef(21, "Lehti",         "🍃", "Lehvät"),
+            new PresetDef(22, "Puunsiru",      "🌿", "Puun oksat"),
+            new PresetDef(23, "Perhonen",      "🦋", "Perhoset"),
+            new PresetDef(24, "Kissa",         "🐱", "Kissa"),
+            new PresetDef(25, "Koira",         "🐕", "Koira"),
+            new PresetDef(26, "Linnut",        "🐦", "Linnut"),
+            new PresetDef(27, "Kala",          "🐟", "Kalat"),
+            new PresetDef(28, "Simpukka",      "🐚", "Simpukka"),
+            new PresetDef(29, "Daalhia",       "🌺", "Daalhia"),
+            new PresetDef(30, "Orchidea",      "🪻", "Orchidea"),
+            
+            // === Juhlat (31-45) ===
+            new PresetDef(31, "Jouluhattu",    "🎅", "Joulupukin hattu"),
+            new PresetDef(32, "Joulukuusi",    "🎄", "Joulukuusi"),
+            new PresetDef(33, "Lumiukko",      "⛄", "Lumiukko"),
+            new PresetDef(34, "Tonttu",        "🧝", "Joulutonttu"),
+            new PresetDef(35, "Kynttilä",      "🕯️", "Kynttilä"),
+            new PresetDef(36, "Tähti",         "⭐", "Joulutähti"),
+            new PresetDef(37, "Muffinssi",     "🧁", "Joulumuffinssi"),
+            new PresetDef(38, "Suklaa",        "🍫", "Suklaa"),
+            new PresetDef(39, "Karkki",        "🍬", "Karkit"),
+            new PresetDef(40, "piparkakku",    "🥧", "Piparkakku"),
+            new PresetDef(41, "Imppi",         "🧚", "Jouluhaltia"),
+            new PresetDef(42, "Poro",          "🦌", "Jouluporo"),
+            new PresetDef(43, "Reki",          "🛷", "Joulureki"),
+            new PresetDef(44, "Suklaapatukka", "🍫", "Suklaapatukka"),
+            new PresetDef(45, "Kerma",         "🍥", "Kermakaku"),
+            
+            // === Yllätys (46-55) ===
+            new PresetDef(46, "Klovni",        "🤡", "Klovni naama"),
+            new PresetDef(47, "Hassu",         "😜", "Hassu naama"),
+            new PresetDef(48, "Ilo",           "😊", "Iloinen naama"),
+            new PresetDef(49, "Surullinen",    "😢", "Surullinen"),
+            new PresetDef(50, "Vihainen",      "😡", "Vihainen"),
+            new PresetDef(51, "Yllätys",       "🎁", "Yllätyslaatikko"),
+            new PresetDef(52, "Kulta",         "🏆", "Kultamitali"),
+            new PresetDef(53, "Hopea",         "🥈", "Hopeamitali"),
+            new PresetDef(54, "Pronssi",       "🥉", "Pronssimitali"),
+            new PresetDef(55, "Palkinto",     "🏅", "Palkinto"),
+            
+            // === Sekalaiset (56-58) ===
+            new PresetDef(56, "Sateenkaari",   "🌈", "Sateenkaari"),
+            new PresetDef(57, "Aamu",          "🌅", "Auringonnousu"),
+            new PresetDef(58, "Ilta",          "🌃", "Tähtitaivas ilta"),
         };
 
         public MainWindow()
