@@ -139,7 +139,7 @@ namespace FairyRgbController
         {
             if (rect == null) return;
             
-            var (x, y) = ((int, int))rect.Tag);
+            var (x, y) = ((int, int))rect.Tag;
             
             if (DrawTool.IsChecked == true)
             {
