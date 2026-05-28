@@ -11,10 +11,10 @@ using System.Windows.Threading;
 using FairyRgbController.Models;
 using FairyRgbController.Services;
 using Microsoft.Win32;
-using WpfColor = System.Windows.Media.Color;
-using WpfColors = System.Windows.Media.Colors;
-using WpfRectangle = System.Windows.Shapes.Rectangle;
-using WpfMouseEventArgs = System.Windows.Input.MouseEventArgs;
+using MediaColor = System.Windows.Media.Color;
+using MediaColors = System.Windows.Media.Colors;
+using MediaRectangle = System.Windows.Shapes.Rectangle;
+using MediaMouseEventArgs = System.Windows.Input.MouseEventArgs;
 
 namespace FairyRgbController
 {
@@ -23,10 +23,10 @@ namespace FairyRgbController
         // Grid state
         private int _gridWidth = 8;
         private int _gridHeight = 32;
-        private WpfColor[,] _pixels;
+        private MediaColor[,] _pixels;
         
         // Current drawing state
-        private WpfColor _currentColor = WpfColors.Red;
+        private MediaColor _currentColor = MediaColors.Red;
         private bool _isDrawing;
         
         // Animation
@@ -37,7 +37,7 @@ namespace FairyRgbController
         private HelloFairyService? _fairyService;
         
         // Pixel cell dictionary for quick access
-        private readonly Dictionary<(int x, int y), WpfRectangle> _cells = new();
+        private readonly Dictionary<(int x, int y), MediaRectangle> _cells = new();
         
         public PixelEditorWindow()
         {
@@ -53,7 +53,7 @@ namespace FairyRgbController
         
         private void InitializeGrid()
         {
-            _pixels = new WpfColor[_gridHeight, _gridWidth];
+            _pixels = new MediaColor[_gridHeight, _gridWidth];
             PixelCanvas.Children.Clear();
             _cells.Clear();
             
@@ -61,12 +61,12 @@ namespace FairyRgbController
             {
                 for (int x = 0; x < _gridWidth; x++)
                 {
-                    var rect = new WpfRectangle
+                    var rect = new MediaRectangle
                     {
                         Width = 20,
                         Height = 20,
-                        Fill = new SolidColorBrush(WpfColors.Black),
-                        Stroke = new SolidColorBrush(WpfColor.FromRgb(45, 45, 45)),
+                        Fill = new SolidColorBrush(MediaColors.Black),
+                        Stroke = new SolidColorBrush(MediaColor.FromRgb(45, 45, 45)),
                         StrokeThickness = 0.5,
                         RadiusX = 2,
                         RadiusY = 2,
@@ -84,7 +84,7 @@ namespace FairyRgbController
                     PixelCanvas.Children.Add(rect);
                     _cells[(x, y)] = rect;
                     
-                    _pixels[y, x] = WpfColors.Black;
+                    _pixels[y, x] = MediaColors.Black;
                 }
             }
             
@@ -122,7 +122,7 @@ namespace FairyRgbController
         private void Cell_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             _isDrawing = true;
-            ApplyToolToCell(sender as WpfRectangle);
+            ApplyToolToCell(sender as MediaRectangle);
             e.Handled = true;
         }
         
@@ -131,15 +131,15 @@ namespace FairyRgbController
             _isDrawing = false;
         }
         
-        private void Cell_MouseEnter(object sender, WpfMouseEventArgs e)
+        private void Cell_MouseEnter(object sender, MediaMouseEventArgs e)
         {
-            if (_isDrawing && sender is WpfRectangle rect)
+            if (_isDrawing && sender is MediaRectangle rect)
             {
                 ApplyToolToCell(rect);
             }
         }
         
-        private void ApplyToolToCell(WpfRectangle? rect)
+        private void ApplyToolToCell(MediaRectangle? rect)
         {
             if (rect == null) return;
             
@@ -152,8 +152,8 @@ namespace FairyRgbController
             }
             else if (EraseTool.IsChecked == true)
             {
-                _pixels[y, x] = WpfColors.Black;
-                rect.Fill = new SolidColorBrush(WpfColors.Black);
+                _pixels[y, x] = MediaColors.Black;
+                rect.Fill = new SolidColorBrush(MediaColors.Black);
             }
             else if (FillTool.IsChecked == true)
             {
@@ -172,7 +172,7 @@ namespace FairyRgbController
             _isDrawing = false;
         }
         
-        private void PixelCanvas_MouseMove(object sender, WpfMouseEventArgs e)
+        private void PixelCanvas_MouseMove(object sender, MediaMouseEventArgs e)
         {
             // Handled by individual cell mouse events
         }
@@ -181,7 +181,7 @@ namespace FairyRgbController
         {
             if (sender is Button btn && btn.Tag is string colorHex)
             {
-                _currentColor = (WpfColor)ColorConverter.ConvertFromString(colorHex);
+                _currentColor = (MediaColor)ColorConverter.ConvertFromString(colorHex);
                 CurrentColorPreview.Background = new SolidColorBrush(_currentColor);
             }
         }
@@ -202,18 +202,18 @@ namespace FairyRgbController
             var r = 255;
             var g = 0;
             var b = 0;
-            var preview = new Rectangle { Width = 100, Height = 30, Fill = new SolidColorBrush(WpfColors.Red), HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 10, 0, 10) };
+            var preview = new Rectangle { Width = 100, Height = 30, Fill = new SolidColorBrush(MediaColors.Red), HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 10, 0, 10) };
             
             var rSlider = new Slider { Minimum = 0, Maximum = 255, Value = 255, TickFrequency = 1, IsSnapToTickEnabled = true, Margin = new Thickness(0, 5, 0, 5) };
             var gSlider = new Slider { Minimum = 0, Maximum = 255, Value = 0, TickFrequency = 1, IsSnapToTickEnabled = true, Margin = new Thickness(0, 5, 0, 5) };
             var bSlider = new Slider { Minimum = 0, Maximum = 255, Value = 0, TickFrequency = 1, IsSnapToTickEnabled = true, Margin = new Thickness(0, 5, 0, 5) };
             
-            rSlider.ValueChanged += (s, args) => { r = (int)rSlider.Value; preview.Fill = new SolidColorBrush(WpfColor.FromRgb((byte)r, (byte)g, (byte)b)); };
-            gSlider.ValueChanged += (s, args) => { g = (int)gSlider.Value; preview.Fill = new SolidColorBrush(WpfColor.FromRgb((byte)r, (byte)g, (byte)b)); };
-            bSlider.ValueChanged += (s, args) => { b = (int)bSlider.Value; preview.Fill = new SolidColorBrush(WpfColor.FromRgb((byte)r, (byte)g, (byte)b)); };
+            rSlider.ValueChanged += (s, args) => { r = (int)rSlider.Value; preview.Fill = new SolidColorBrush(MediaColor.FromRgb((byte)r, (byte)g, (byte)b)); };
+            gSlider.ValueChanged += (s, args) => { g = (int)gSlider.Value; preview.Fill = new SolidColorBrush(MediaColor.FromRgb((byte)r, (byte)g, (byte)b)); };
+            bSlider.ValueChanged += (s, args) => { b = (int)bSlider.Value; preview.Fill = new SolidColorBrush(MediaColor.FromRgb((byte)r, (byte)g, (byte)b)); };
             
             var okButton = new Button { Content = "OK", Width = 80, IsDefault = true };
-            okButton.Click += (s, args) => { _currentColor = WpfColor.FromRgb((byte)r, (byte)g, (byte)b); CurrentColorPreview.Background = new SolidColorBrush(_currentColor); dialog.Close(); };
+            okButton.Click += (s, args) => { _currentColor = MediaColor.FromRgb((byte)r, (byte)g, (byte)b); CurrentColorPreview.Background = new SolidColorBrush(_currentColor); dialog.Close(); };
             
             var cancelButton = new Button { Content = "Peru", Width = 80, IsCancel = true };
             
@@ -284,9 +284,9 @@ namespace FairyRgbController
             foreach (var cell in _cells.Values)
             {
                 var (x, y) = ((int, int))cell.Tag;
-                if (_pixels[y, x] != WpfColors.Black)
+                if (_pixels[y, x] != MediaColors.Black)
                 {
-                    cell.Fill = new SolidColorBrush(isOddFrame ? _currentColor : WpfColors.Black);
+                    cell.Fill = new SolidColorBrush(isOddFrame ? _currentColor : MediaColors.Black);
                 }
             }
         }
@@ -425,7 +425,7 @@ namespace FairyRgbController
             // Resize grid if needed
             if (_pixels.GetLength(0) != _gridHeight || _pixels.GetLength(1) != _gridWidth)
             {
-                _pixels = new WpfColor[_gridHeight, _gridWidth];
+                _pixels = new MediaColor[_gridHeight, _gridWidth];
             }
             
             // Load pixel data
@@ -446,7 +446,7 @@ namespace FairyRgbController
                             enumerator.MoveNext(); int b = enumerator.Current.GetInt32();
                             enumerator.MoveNext(); int a = enumerator.Current.GetInt32();
                             
-                            _pixels[y, x] = WpfColor.FromArgb((byte)a, (byte)r, (byte)g, (byte)b);
+                            _pixels[y, x] = MediaColor.FromArgb((byte)a, (byte)r, (byte)g, (byte)b);
                         }
                         x++;
                     }
