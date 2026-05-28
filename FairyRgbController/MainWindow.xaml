@@ -1,27 +1,38 @@
 <Window x:Class="FairyRgbController.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Fairy RGB Controller"
-        Height="750" Width="400"
+        Title="RGB Fairy - F15C Controller"
+        Height="680" Width="420"
+        MinHeight="600" MinWidth="380"
         WindowStartupLocation="CenterScreen"
-        Background="#0D0D1A"
+        Background="#0F0F1A"
         Foreground="White">
 
     <Window.Resources>
-        <!-- Modern card style -->
+        <!-- Modern Color Palette -->
+        <SolidColorBrush x:Key="BgDark" Color="#0F0F1A"/>
+        <SolidColorBrush x:Key="BgCard" Color="#1A1A2E"/>
+        <SolidColorBrush x:Key="BgHover" Color="#252542"/>
+        <SolidColorBrush x:Key="Accent" Color="#7C3AED"/>
+        <SolidColorBrush x:Key="AccentLight" Color="#A78BFA"/>
+        <SolidColorBrush x:Key="Success" Color="#10B981"/>
+        <SolidColorBrush x:Key="TextPrimary" Color="#F8FAFC"/>
+        <SolidColorBrush x:Key="TextMuted" Color="#94A3B8"/>
+
+        <!-- Card Style -->
         <Style x:Key="CardBorder" TargetType="Border">
-            <Setter Property="Background" Value="#161625"/>
+            <Setter Property="Background" Value="{StaticResource BgCard}"/>
             <Setter Property="CornerRadius" Value="12"/>
             <Setter Property="Padding" Value="16"/>
             <Setter Property="Margin" Value="0,0,0,12"/>
         </Style>
 
-        <!-- Primary accent button -->
-        <Style x:Key="PrimaryButton" TargetType="Button">
-            <Setter Property="Background" Value="#6366F1"/>
+        <!-- Primary Button -->
+        <Style x:Key="PrimaryBtn" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource Accent}"/>
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Padding" Value="16,12"/>
+            <Setter Property="Padding" Value="20,12"/>
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Cursor" Value="Hand"/>
@@ -30,42 +41,80 @@
                     <ControlTemplate TargetType="Button">
                         <Border Background="{TemplateBinding Background}"
                                 CornerRadius="8"
+                                Padding="{TemplateBinding Padding}"
+                                Opacity="{TemplateBinding Opacity}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{StaticResource AccentLight}"/>
+                </Trigger>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Opacity" Value="0.5"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Secondary Button -->
+        <Style x:Key="SecondaryBtn" TargetType="Button" BasedOn="{StaticResource PrimaryBtn}">
+            <Setter Property="Background" Value="{StaticResource BgHover}"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#2D2D50"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Icon Button (small) -->
+        <Style x:Key="IconBtn" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource TextMuted}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="8"/>
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="6"
                                 Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{StaticResource BgHover}"/>
+                    <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+                </Trigger>
+            </Style.Triggers>
         </Style>
 
-        <!-- Secondary button -->
-        <Style x:Key="SecondaryButton" TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
-            <Setter Property="Background" Value="#1E1E3F"/>
-            <Setter Property="FontWeight" Value="Normal"/>
-        </Style>
-
-        <!-- Preset effect button -->
-        <Style x:Key="EffectButton" TargetType="Button">
-            <Setter Property="Background" Value="#1E1E3F"/>
-            <Setter Property="Foreground" Value="White"/>
+        <!-- Effect Button -->
+        <Style x:Key="EffectBtn" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource BgHover}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Padding" Value="12,10"/>
             <Setter Property="Margin" Value="4"/>
-            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontSize" Value="13"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
                         <Border x:Name="border" Background="{TemplateBinding Background}"
-                                CornerRadius="8" Padding="{TemplateBinding Padding}">
+                                CornerRadius="8"
+                                Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#2D2D5A"/>
-                            </Trigger>
-                            <Trigger Property="Tag" Value="active">
-                                <Setter TargetName="border" Property="Background" Value="#6366F1"/>
+                                <Setter TargetName="border" Property="Background" Value="#2D2D50"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -73,30 +122,47 @@
             </Setter>
         </Style>
 
-        <!-- Section header -->
-        <Style x:Key="SectionHeader" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="11"/>
-            <Setter Property="Foreground" Value="#6366F1"/>
-            <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="Margin" Value="0,0,0,8"/>
+        <!-- Quick Color Button -->
+        <Style x:Key="ColorBtn" TargetType="Button">
+            <Setter Property="Width" Value="36"/>
+            <Setter Property="Height" Value="36"/>
+            <Setter Property="Margin" Value="4"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}"
+                                CornerRadius="18"
+                                BorderThickness="2"
+                                BorderBrush="Transparent">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="White"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
-        <!-- Slider style -->
+        <!-- Slider Style -->
         <Style x:Key="ModernSlider" TargetType="Slider">
             <Setter Property="Minimum" Value="0"/>
-            <Setter Property="Maximum" Value="100"/>
+            <Setter Property="Maximum" Value="1000"/>
             <Setter Property="Height" Value="24"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Slider">
                         <Grid>
-                            <Border Height="6" Background="#2D2D5A" CornerRadius="3" VerticalAlignment="Center"/>
+                            <Border Height="6" CornerRadius="3" Background="{StaticResource BgHover}"/>
                             <Track x:Name="PART_Track">
                                 <Track.Thumb>
-                                    <Thumb>
+                                    <Thumb Width="20" Height="20">
                                         <Thumb.Template>
                                             <ControlTemplate TargetType="Thumb">
-                                                <Ellipse Width="20" Height="20" Fill="#6366F1"/>
+                                                <Ellipse Fill="{StaticResource Accent}" Width="20" Height="20"/>
                                             </ControlTemplate>
                                         </Thumb.Template>
                                     </Thumb>
@@ -109,134 +175,151 @@
         </Style>
     </Window.Resources>
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <StackPanel Margin="16">
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
 
-            <!-- Header -->
-            <Grid Margin="0,0,0,16">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                <StackPanel>
-                    <TextBlock Text="🧚 Fairy RGB" FontSize="22" FontWeight="Bold"/>
-                    <TextBlock x:Name="ConnectionStatus" Text="Ei yhdistetty" FontSize="12" Foreground="#888"/>
-                </StackPanel>
-                <Button x:Name="ConnectButton" Grid.Column="1" Content="Yhdistä"
-                        Style="{StaticResource PrimaryButton}" Click="ConnectButton_Click"/>
-            </Grid>
+        <!-- HEADER -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,16">
+            <TextBlock Text="RGB Fairy" FontSize="28" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
+            <TextBlock x:Name="ConnectionStatus" Text="Yhdistä laite" FontSize="13" Foreground="{StaticResource TextMuted}" Margin="0,4,0,0"/>
+        </StackPanel>
 
-            <!-- Device Card -->
-            <Border Style="{StaticResource CardBorder}">
-                <StackPanel>
-                    <TextBlock Style="{StaticResource SectionHeader}" Text="LAITE"/>
+        <!-- MAIN CONTENT -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel>
+
+                <!-- CONNECTION CARD -->
+                <Border Style="{StaticResource CardBorder}">
+                    <StackPanel>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0">
+                                <TextBlock x:Name="DeviceName" Text="Laite ei yhdistetty" FontSize="16" FontWeight="SemiBold"/>
+                                <TextBlock x:Name="DeviceInfo" Text="Paina skannaa löytääksesi" FontSize="12" Foreground="{StaticResource TextMuted}" Margin="0,2,0,0"/>
+                            </StackPanel>
+
+                            <Button x:Name="PowerButton" Grid.Column="1" Content="⚡" Style="{StaticResource IconBtn}" FontSize="24" Click="PowerButton_Click"/>
+                        </Grid>
+
+                        <Grid Margin="0,16,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Button x:Name="ScanButton" Content="🔍 Skannaa" Style="{StaticResource PrimaryBtn}" Click="ScanButton_Click"/>
+                            <Button x:Name="ConnectButton" Grid.Column="1" Content="Yhdistä" Style="{StaticResource SecondaryBtn}" Click="ConnectButton_Click" IsEnabled="False"/>
+                        </Grid>
+
+                        <!-- Device List -->
+                        <ListBox x:Name="DevicesListBox" Visibility="Collapsed" Margin="0,12,0,0"
+                                 Background="Transparent" BorderThickness="0" MaxHeight="150"
+                                 SelectionChanged="DevicesListBox_SelectionChanged">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="{StaticResource BgHover}" CornerRadius="6" Padding="12,8" Margin="0,2">
+                                        <TextBlock Text="{Binding Name}" Foreground="{StaticResource TextPrimary}"/>
+                                    </Border>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </StackPanel>
+                </Border>
+
+                <!-- EFFECTS CAROUSEL -->
+                <Border Style="{StaticResource CardBorder}">
+                    <StackPanel>
+                        <Grid Margin="0,0,0,12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Text="Efektit" FontSize="18" FontWeight="SemiBold"/>
+                            <Button Grid.Column="1" Content="⚙️" Style="{StaticResource IconBtn}" Click="ManageEffectsButton_Click" ToolTip="Hallitse efektejä"/>
+                        </Grid>
+
+                        <!-- Horizontal scrolling effects -->
+                        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" Margin="0,0,0,8">
+                            <StackPanel Orientation="Horizontal">
+                                <WrapPanel x:Name="EffectsWrapPanel" Orientation="Horizontal">
+                                    <!-- Effects loaded dynamically -->
+                                </WrapPanel>
+                            </StackPanel>
+                        </ScrollViewer>
+
+                        <TextBlock Text="← Selaa vasemmalle/oikealle →" FontSize="11" Foreground="{StaticResource TextMuted}" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- BRIGHTNESS -->
+                <Border Style="{StaticResource CardBorder}">
+                    <StackPanel>
+                        <Grid Margin="0,0,0,12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Text="Kirkkaus" FontSize="18" FontWeight="SemiBold"/>
+                            <TextBlock x:Name="BrightnessValue" Grid.Column="1" Text="50%" FontSize="18" Foreground="{StaticResource AccentLight}"/>
+                        </Grid>
+
+                        <Slider x:Name="BrightnessSlider" Style="{StaticResource ModernSlider}"
+                                Value="500" ValueChanged="BrightnessSlider_ValueChanged"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- QUICK COLORS -->
+                <Border Style="{StaticResource CardBorder}">
+                    <StackPanel>
+                        <TextBlock Text="Värit (preset)" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,12"/>
+
+                        <WrapPanel HorizontalAlignment="Center">
+                            <Button Style="{StaticResource ColorBtn}" Background="#FFFFFF" Tag="FFFFFF" Click="QuickColor_Click"/>
+                            <Button Style="{StaticResource ColorBtn}" Background="#EF4444" Tag="EF4444" Click="QuickColor_Click"/>
+                            <Button Style="{StaticResource ColorBtn}" Background="#22C55E" Tag="22C55E" Click="QuickColor_Click"/>
+                            <Button Style="{StaticResource ColorBtn}" Background="#3B82F6" Tag="3B82F6" Click="QuickColor_Click"/>
+                            <Button Style="{StaticResource ColorBtn}" Background="#EAB308" Tag="EAB308" Click="QuickColor_Click"/>
+                            <Button Style="{StaticResource ColorBtn}" Background="#A855F7" Tag="A855F7" Click="QuickColor_Click"/>
+                            <Button Style="{StaticResource ColorBtn}" Background="#F97316" Tag="F97316" Click="QuickColor_Click"/>
+                            <Button Style="{StaticResource ColorBtn}" Background="#EC4899" Tag="EC4899" Click="QuickColor_Click"/>
+                        </WrapPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- PIXEL EDITOR -->
+                <Border Style="{StaticResource CardBorder}">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        <TextBlock x:Name="DeviceName" Text="Valitse laite..." VerticalAlignment="Center"/>
-                        <Button x:Name="ScanButton" Grid.Column="1" Content="🔍" Padding="12,8"
-                                Style="{StaticResource SecondaryButton}" Click="ScanButton_Click"/>
-                    </Grid>
-                    <ListBox x:Name="DevicesListBox" Background="Transparent" BorderThickness="0"
-                             MaxHeight="150" Margin="0,8,0,0" SelectionChanged="DevicesListBox_SelectionChanged">
-                        <ListBox.ItemTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding Name}" Padding="8,4"/>
-                            </DataTemplate>
-                        </ListBox.ItemTemplate>
-                    </ListBox>
-                </StackPanel>
-            </Border>
 
-            <!-- Brightness Card -->
-            <Border Style="{StaticResource CardBorder}">
-                <StackPanel>
-                    <Grid>
-                        <TextBlock Style="{StaticResource SectionHeader}" Text="KIRKKAUS"/>
-                        <TextBlock x:Name="BrightnessValue" Text="100%" HorizontalAlignment="Right" Foreground="#6366F1"/>
-                    </Grid>
-                    <Slider x:Name="BrightnessSlider" Style="{StaticResource ModernSlider}"
-                            Value="100" ValueChanged="BrightnessSlider_ValueChanged"/>
-                </StackPanel>
-            </Border>
-
-            <!-- Quick Colors Card -->
-            <Border Style="{StaticResource CardBorder}">
-                <StackPanel>
-                    <TextBlock Style="{StaticResource SectionHeader}" Text="VÄRIT"/>
-                    <WrapPanel>
-                        <Button Style="{StaticResource EffectButton}" Background="#FF0000" Width="40" Height="40" Click="QuickColor_Click" Tag="FF0000"/>
-                        <Button Style="{StaticResource EffectButton}" Background="#00FF00" Width="40" Height="40" Click="QuickColor_Click" Tag="00FF00"/>
-                        <Button Style="{StaticResource EffectButton}" Background="#0000FF" Width="40" Height="40" Click="QuickColor_Click" Tag="0000FF"/>
-                        <Button Style="{StaticResource EffectButton}" Background="#FFFF00" Width="40" Height="40" Click="QuickColor_Click" Tag="FFFF00"/>
-                        <Button Style="{StaticResource EffectButton}" Background="#FF00FF" Width="40" Height="40" Click="QuickColor_Click" Tag="FF00FF"/>
-                        <Button Style="{StaticResource EffectButton}" Background="#00FFFF" Width="40" Height="40" Click="QuickColor_Click" Tag="00FFFF"/>
-                        <Button Style="{StaticResource EffectButton}" Background="#FFFFFF" Width="40" Height="40" Click="QuickColor_Click" Tag="FFFFFF"/>
-                        <Button Style="{StaticResource EffectButton}" Background="#FF8800" Width="40" Height="40" Click="QuickColor_Click" Tag="FF8800"/>
-                    </WrapPanel>
-                    <TextBlock Text="Huom: F15C tukee vain preset-värejä" FontSize="10" Foreground="#666" Margin="0,8,0,0"/>
-                </StackPanel>
-            </Border>
-
-            <!-- Effects Card -->
-            <Border Style="{StaticResource CardBorder}">
-                <StackPanel>
-                    <Grid>
-                        <TextBlock Style="{StaticResource SectionHeader}" Text="EFFEKTIT"/>
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                            <Button x:Name="ManageEffectsButton" Content="⚙️" Padding="8,4"
-                                    Style="{StaticResource SecondaryButton}" Click="ManageEffectsButton_Click"/>
+                        <StackPanel>
+                            <TextBlock Text="🎨 Pikseli-Editor" FontSize="18" FontWeight="SemiBold"/>
+                            <TextBlock Text="Piirrä omat efektit" FontSize="12" Foreground="{StaticResource TextMuted}" Margin="0,4,0,0"/>
                         </StackPanel>
+
+                        <Button x:Name="PixelEditorButton" Grid.Column="1" Content="Avaa" Style="{StaticResource SecondaryBtn}"
+                                Click="OpenPixelEditor_Click" IsEnabled="False"/>
                     </Grid>
+                </Border>
 
-                    <!-- Effect Folders -->
-                    <Expander x:Name="FoldersExpander" Header="📁 Kansiot" IsExpanded="True" Foreground="White" Margin="0,8,0,0">
-                        <ListBox x:Name="FoldersListBox" Background="Transparent" BorderThickness="0"
-                                 SelectionChanged="FoldersListBox_SelectionChanged" Margin="0,4,0,0">
-                            <ListBox.ItemTemplate>
-                                <DataTemplate>
-                                    <TextBlock Text="{Binding Name}" Padding="4"/>
-                                </DataTemplate>
-                            </ListBox.ItemTemplate>
-                        </ListBox>
-                    </Expander>
+            </StackPanel>
+        </ScrollViewer>
 
-                    <!-- Effects Grid -->
-                    <WrapPanel x:Name="EffectsWrapPanel" Margin="0,8,0,0"/>
-
-                    <!-- All Effects Button -->
-                    <Button x:Name="ShowAllEffectsButton" Content="Näytä kaikki efektit"
-                            Style="{StaticResource SecondaryButton}" Margin="0,8,0,0"
-                            Click="ShowAllEffectsButton_Click"/>
-                </StackPanel>
-            </Border>
-
-            <!-- DIY Pixel Card -->
-            <Border Style="{StaticResource CardBorder}">
-                <Button x:Name="PixelEditorButton" Content="🎨 Pikselipiirto"
-                        Style="{StaticResource PrimaryButton}" Click="OpenPixelEditor_Click"
-                        IsEnabled="False"/>
-            </Border>
-
-            <!-- Power Card -->
-            <Border Style="{StaticResource CardBorder}">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <Button x:Name="PowerButton" Content="💡 ON" Style="{StaticResource PrimaryButton}"
-                            Click="PowerButton_Click" Margin="0,0,6,0"/>
-                    <Button x:Name="OffButton" Grid.Column="1" Content="⭕ OFF"
-                            Style="{StaticResource SecondaryButton}" Click="OffButton_Click" Margin="6,0,0,0"/>
-                </Grid>
-            </Border>
-
-            <!-- Spacer -->
-            <Border Height="20"/>
-
+        <!-- FOOTER -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,12,0,0">
+            <Button Content="Katkaise yhteys" Style="{StaticResource SecondaryBtn}" Click="ConnectButton_Click"/>
         </StackPanel>
-    </ScrollViewer>
+    </Grid>
 </Window>

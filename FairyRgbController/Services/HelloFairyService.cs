@@ -27,6 +27,12 @@ namespace FairyRgbController.Services
 
             try
             {
+                // Combined selector: BLE (paired+unpaired) + Classic Bluetooth
+                var bPaired = BluetoothLEDevice.GetDeviceSelectorFromPairingState(true);
+                var bUnpaired = BluetoothLEDevice.GetDeviceSelectorFromPairingState(false);
+                var classic = BluetoothDevice.GetDeviceSelector();
+                var allSelector = $"({bPaired}) OR ({bUnpaired}) OR ({classic})";
+
                 // Quick scan: check paired devices first, then few rounds of discovery
                 var fairyDevices = new List<BleDeviceInfo>();
 
@@ -64,14 +70,14 @@ namespace FairyRgbController.Services
                     return list;
                 }
 
-                // Round 2-3: Quick discovery scan
+                // Round 2-3: Quick discovery scan using unpaired selector
                 for (int round = 2; round <= 3; round++)
                 {
                     NotifyStatus($"Scan {round}/3...");
                     var unpairedSelector = BluetoothLEDevice.GetDeviceSelectorFromPairingState(false);
-                    var allSelector = $"({pairedSelector}) OR ({unpairedSelector})";
+                    var roundSelector = $"({unpairedSelector})";
 
-                    var devices = await DeviceInformation.FindAllAsync(allSelector)
+                    var devices = await DeviceInformation.FindAllAsync(roundSelector)
                         .AsTask().WaitAsync(TimeSpan.FromMilliseconds(3000));
 
                     int added = 0;

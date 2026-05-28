@@ -18,11 +18,8 @@ namespace FairyRgbController
         private BleDeviceInfo? _selectedDevice;
         private bool _isPowerOn;
         private byte _selectedPresetId = 8; // Default to Kurpitsa
-        private string? _currentFolderId;
 
-        // ============================================
-        // RGB FAIRY 58 PRESET EFFECTS (F15C Compatible)
-        // ============================================
+        // All 58 presets for F15C
         private static readonly PresetDef[] Presets = new PresetDef[]
         {
             new PresetDef(1, "Valkoinen", "⚪"),
@@ -85,8 +82,6 @@ namespace FairyRgbController
             new PresetDef(58, "Meri", "🏖️"),
         };
 
-        #region Initialization
-
         public MainWindow()
         {
             InitializeComponent();
@@ -95,27 +90,10 @@ namespace FairyRgbController
             _fairyService.StatusChanged += OnStatusChanged;
             _fairyService.DevicesUpdated += OnDevicesUpdated;
 
-            LoadEffectsData();
-            BuildFoldersList();
-            BuildAllEffectButtons();
+            BuildEffectButtons();
         }
 
-        private void LoadEffectsData()
-        {
-            var data = EffectsManager.Load();
-            _currentFolderId = string.IsNullOrEmpty(data.LastSelectedFolderId) ? null : data.LastSelectedFolderId;
-        }
-
-        private void SaveLastFolder()
-        {
-            var data = EffectsManager.Load();
-            data.LastSelectedFolderId = _currentFolderId ?? "";
-            EffectsManager.Save();
-        }
-
-        #endregion
-
-        #region Device Scanning & Connection
+        #region Scanning & Connection
 
         private async void ScanButton_Click(object sender, RoutedEventArgs e)
         {
@@ -130,27 +108,37 @@ namespace FairyRgbController
 
             try
             {
-                _foundDevices = (await _fairyService.ScanAsync(10000))
-                    .Where(d => d.Name.IndexOf("fairy", StringComparison.OrdinalIgnoreCase) >= 0)
+                var allDevices = await _fairyService.ScanAsync(10000);
+                _foundDevices = allDevices
+                    .Where(d => d.Name.IndexOf("fairy", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                                d.Name.IndexOf("hello", StringComparison.OrdinalIgnoreCase) >= 0)
                     .ToList();
 
                 DevicesListBox.ItemsSource = _foundDevices;
+                DevicesListBox.Visibility = _foundDevices.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
 
                 if (_foundDevices.Count == 0)
                 {
                     ConnectionStatus.Text = "Laitteita ei löytynyt";
+                    DeviceInfo.Text = "Tarkista Bluetooth";
                 }
                 else if (_foundDevices.Count == 1)
                 {
-                    // Auto-select single device
                     _selectedDevice = _foundDevices[0];
                     DeviceName.Text = _foundDevices[0].Name;
+                    DeviceInfo.Text = "1 laite löydetty";
+                    ConnectButton.IsEnabled = true;
+                }
+                else
+                {
+                    DeviceInfo.Text = $"{_foundDevices.Count} laitetta löydetty";
                     ConnectButton.IsEnabled = true;
                 }
             }
             catch (Exception ex)
             {
                 ConnectionStatus.Text = $"Virhe: {ex.Message}";
+                DeviceInfo.Text = ex.Message;
             }
             finally
             {
@@ -177,13 +165,14 @@ namespace FairyRgbController
                 UpdateConnectionUI(false);
                 ConnectButton.Content = "Yhdistä";
                 PixelEditorButton.IsEnabled = false;
+                PowerButton.Content = "⚡";
                 return;
             }
 
             if (_selectedDevice == null) return;
 
             ConnectButton.IsEnabled = false;
-            ConnectButton.Content = "⏳ Yhdistetään...";
+            ConnectButton.Content = "⏳...";
 
             try
             {
@@ -192,13 +181,11 @@ namespace FairyRgbController
                 ConnectButton.Content = "Katkaise";
                 ConnectButton.IsEnabled = true;
                 PixelEditorButton.IsEnabled = true;
+                PowerButton.Content = "💡";
 
-                // Power on
                 _isPowerOn = true;
                 await _fairyService.SetPowerAsync(true);
                 await _fairyService.SetPresetAsync(_selectedPresetId, (int)BrightnessSlider.Value);
-                PowerButton.Content = "💡 ON";
-                PowerButton.Background = new SolidColorBrush(Color.FromRgb(0x1E, 0x4A, 0x2E));
             }
             catch (Exception ex)
             {
@@ -217,92 +204,23 @@ namespace FairyRgbController
         {
             Dispatcher.Invoke(() =>
             {
-                DevicesListBox.ItemsSource = null;
+                _foundDevices = devices;
                 DevicesListBox.ItemsSource = devices;
+                DevicesListBox.Visibility = devices.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
             });
         }
 
         private void UpdateConnectionUI(bool connected)
         {
             ConnectionStatus.Text = connected ? $"Yhdistetty: {_selectedDevice?.Name}" : "Ei yhdistetty";
+            DeviceInfo.Text = connected ? "Valmiina" : "Paina skannaa löytääksesi";
         }
 
         #endregion
 
-        #region Effects Management
+        #region Effects
 
-        private void BuildFoldersList()
-        {
-            var data = EffectsManager.Load();
-            FoldersListBox.ItemsSource = data.Folders;
-
-            // Select last folder or first
-            if (!string.IsNullOrEmpty(_currentFolderId))
-            {
-                var folder = data.Folders.FirstOrDefault(f => f.Id == _currentFolderId);
-                if (folder != null)
-                    FoldersListBox.SelectedItem = folder;
-            }
-
-            if (FoldersListBox.SelectedItem == null && data.Folders.Count > 0)
-                FoldersListBox.SelectedIndex = 0;
-        }
-
-        private void FoldersListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (FoldersListBox.SelectedItem is EffectFolder folder)
-            {
-                _currentFolderId = folder.Id;
-                SaveLastFolder();
-                BuildEffectsForCurrentFolder();
-            }
-        }
-
-        private void BuildEffectsForCurrentFolder()
-        {
-            EffectsWrapPanel.Children.Clear();
-
-            var data = EffectsManager.Load();
-            var folder = data.Folders.FirstOrDefault(f => f.Id == _currentFolderId);
-
-            IEnumerable<PresetDef> effectsToShow;
-
-            if (folder != null && folder.EffectIds.Count > 0)
-            {
-                // Show only effects in this folder
-                var ids = folder.EffectIds.Select(int.Parse).ToHashSet();
-                effectsToShow = Presets.Where(p => ids.Contains(p.Id));
-            }
-            else
-            {
-                // Show all effects
-                effectsToShow = Presets;
-            }
-
-            foreach (var preset in effectsToShow)
-            {
-                var effect = EffectsManager.GetOrCreateEffect((byte)preset.Id, preset.Name);
-                var displayName = !string.IsNullOrEmpty(effect.CustomName) ? effect.CustomName : preset.Name;
-
-                var btn = new Button
-                {
-                    Content = $"{preset.Icon} {displayName}",
-                    Tag = (byte)preset.Id,
-                    Style = (Style)FindResource("EffectButton"),
-                    ToolTip = $"ID: {preset.Id}\nKlikkaa nimetäksesi"
-                };
-
-                if (preset.Id == _selectedPresetId)
-                    btn.Tag = "active";
-
-                btn.Click += EffectButton_Click;
-                btn.MouseRightButtonDown += EffectButton_RightClick;
-
-                EffectsWrapPanel.Children.Add(btn);
-            }
-        }
-
-        private void BuildAllEffectButtons()
+        private void BuildEffectButtons()
         {
             EffectsWrapPanel.Children.Clear();
 
@@ -315,7 +233,8 @@ namespace FairyRgbController
                 {
                     Content = $"{preset.Icon} {displayName}",
                     Tag = (byte)preset.Id,
-                    Style = (Style)FindResource("EffectButton")
+                    Style = (Style)FindResource("EffectBtn"),
+                    ToolTip = $"ID: {preset.Id}"
                 };
 
                 btn.Click += EffectButton_Click;
@@ -330,13 +249,6 @@ namespace FairyRgbController
             if (sender is Button btn && btn.Tag is byte id)
             {
                 _selectedPresetId = id;
-
-                // Update button states
-                foreach (Button b in EffectsWrapPanel.Children)
-                {
-                    b.Tag = (b.Tag as byte?) ?? 0;
-                }
-                btn.Tag = "active";
 
                 if (_isPowerOn)
                 {
@@ -354,43 +266,69 @@ namespace FairyRgbController
 
                 var effect = EffectsManager.GetOrCreateEffect(id, preset.Name);
 
-                // Simple rename dialog
                 var dialog = new Window
                 {
                     Title = "Nimeä efekti",
-                    Width = 300,
-                    Height = 150,
+                    Width = 320,
+                    Height = 160,
                     WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                    Background = (Brush)FindResource("CardBorder"),
-                    Foreground = Brushes.White
+                    Background = (Brush)FindResource("BgCard"),
+                    Foreground = Brushes.White,
+                    ResizeMode = ResizeMode.NoResize
                 };
 
-                var panel = new StackPanel { Margin = new Thickness(16) };
-                panel.Children.Add(new TextBlock { Text = $"Efekti: {preset.Name} (ID: {id})", Margin = new Thickness(0, 0, 0, 8) });
+                var panel = new StackPanel { Margin = new Thickness(20) };
+                panel.Children.Add(new TextBlock
+                {
+                    Text = $"{preset.Name} (ID: {id})",
+                    FontSize = 14,
+                    Margin = new Thickness(0, 0, 0, 12)
+                });
 
                 var textBox = new TextBox
                 {
                     Text = effect.CustomName,
-                    Padding = new Thickness(8, 4, 8, 4)
+                    Padding = new Thickness(10, 8, 10, 8),
+                    FontSize = 14
                 };
                 panel.Children.Add(textBox);
 
-                var buttonPanel = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 16, 0, 0) };
+                var btnPanel = new StackPanel
+                {
+                    Orientation = Orientation.Horizontal,
+                    HorizontalAlignment = HorizontalAlignment.Right,
+                    Margin = new Thickness(0, 16, 0, 0)
+                };
 
-                var saveBtn = new Button { Content = "Tallenna", Padding = new Thickness(16, 8, 16, 8), Margin = new Thickness(0, 0, 8, 0) };
+                var saveBtn = new Button
+                {
+                    Content = "Tallenna",
+                    Padding = new Thickness(20, 8, 20, 8),
+                    Background = (Brush)FindResource("Accent"),
+                    Foreground = Brushes.White,
+                    BorderThickness = new Thickness(0)
+                };
                 saveBtn.Click += (s, ev) =>
                 {
                     EffectsManager.RenameEffect(effect.Id, textBox.Text);
-                    BuildEffectsForCurrentFolder();
+                    BuildEffectButtons();
                     dialog.Close();
                 };
 
-                var cancelBtn = new Button { Content = "Peruuta", Padding = new Thickness(16, 8, 16, 8) };
+                var cancelBtn = new Button
+                {
+                    Content = "Peruuta",
+                    Padding = new Thickness(20, 8, 20, 8),
+                    Margin = new Thickness(8, 0, 0, 0),
+                    Background = (Brush)FindResource("BgHover"),
+                    Foreground = Brushes.White,
+                    BorderThickness = new Thickness(0)
+                };
                 cancelBtn.Click += (s, ev) => dialog.Close();
 
-                buttonPanel.Children.Add(saveBtn);
-                buttonPanel.Children.Add(cancelBtn);
-                panel.Children.Add(buttonPanel);
+                btnPanel.Children.Add(saveBtn);
+                btnPanel.Children.Add(cancelBtn);
+                panel.Children.Add(btnPanel);
 
                 dialog.Content = panel;
                 dialog.Owner = this;
@@ -398,22 +336,12 @@ namespace FairyRgbController
             }
         }
 
-        private void ShowAllEffectsButton_Click(object sender, RoutedEventArgs e)
-        {
-            BuildAllEffectButtons();
-        }
-
         private void ManageEffectsButton_Click(object sender, RoutedEventArgs e)
         {
-            // Open effects management window
             var manageWindow = new EffectsManagerWindow();
             manageWindow.Owner = this;
             manageWindow.ShowDialog();
-
-            // Refresh after managing
-            LoadEffectsData();
-            BuildFoldersList();
-            BuildEffectsForCurrentFolder();
+            BuildEffectButtons();
         }
 
         #endregion
@@ -442,7 +370,7 @@ namespace FairyRgbController
 
         #endregion
 
-        #region Power & Colors
+        #region Power & Quick Colors
 
         private async void PowerButton_Click(object sender, RoutedEventArgs e)
         {
@@ -454,25 +382,13 @@ namespace FairyRgbController
             {
                 await _fairyService.SetPowerAsync(true);
                 await _fairyService.SetPresetAsync(_selectedPresetId, (int)BrightnessSlider.Value);
-                PowerButton.Content = "💡 ON";
-                PowerButton.Background = new SolidColorBrush(Color.FromRgb(0x1E, 0x4A, 0x2E));
+                PowerButton.Content = "💡";
             }
             else
             {
                 await _fairyService.SetPowerAsync(false);
-                PowerButton.Content = "⚪ OFF";
-                PowerButton.Background = new SolidColorBrush(Color.FromRgb(0x2D, 0x2D, 0x5A));
+                PowerButton.Content = "⚡";
             }
-        }
-
-        private async void OffButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (!_fairyService.IsConnected) return;
-
-            _isPowerOn = false;
-            await _fairyService.SetPowerAsync(false);
-            PowerButton.Content = "⚪ OFF";
-            PowerButton.Background = new SolidColorBrush(Color.FromRgb(0x2D, 0x2D, 0x5A));
         }
 
         private async void QuickColor_Click(object sender, RoutedEventArgs e)
@@ -481,18 +397,16 @@ namespace FairyRgbController
 
             if (sender is Button btn && btn.Tag is string colorHex)
             {
-                // Convert hex to RGB and find closest preset
                 var r = Convert.ToByte(colorHex.Substring(0, 2), 16);
                 var g = Convert.ToByte(colorHex.Substring(2, 2), 16);
                 var b = Convert.ToByte(colorHex.Substring(4, 2), 16);
 
-                // F15C uses presets - find closest match or use white (1)
+                // F15C uses presets - find closest match
                 byte presetId = 1; // Default white
 
-                // Map some basic colors
-                if (r > 200 && g < 50 && b < 50) presetId = 2; // Red
-                else if (r < 50 && g > 200 && b < 50) presetId = 3; // Green
-                else if (r < 50 && g < 50 && b > 200) presetId = 4; // Blue
+                if (r > 200 && g < 50 && b < 50) presetId = 2;       // Red
+                else if (r < 50 && g > 200 && b < 50) presetId = 3;  // Green
+                else if (r < 50 && g < 50 && b > 200) presetId = 4;  // Blue
                 else if (r > 200 && g > 200 && b < 50) presetId = 5; // Yellow
                 else if (r > 200 && g < 50 && b > 200) presetId = 6; // Purple
                 else if (r > 200 && g > 100 && b < 50) presetId = 7; // Orange
@@ -504,8 +418,7 @@ namespace FairyRgbController
                 {
                     _isPowerOn = true;
                     await _fairyService.SetPowerAsync(true);
-                    PowerButton.Content = "💡 ON";
-                    PowerButton.Background = new SolidColorBrush(Color.FromRgb(0x1E, 0x4A, 0x2E));
+                    PowerButton.Content = "💡";
                 }
             }
         }
