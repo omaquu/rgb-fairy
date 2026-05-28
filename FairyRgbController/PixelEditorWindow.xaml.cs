@@ -188,13 +188,52 @@ namespace FairyRgbController
         
         private void CustomColor_Click(object sender, RoutedEventArgs e)
         {
-            // Use Windows color picker via WinForms
-            var dialog = new System.Windows.Forms.ColorDialog();
-            if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            // Simple custom color picker - shows a dialog with R,G,B sliders
+            var dialog = new Window
             {
-                _currentColor = WpfColor.FromArgb(255, dialog.Color.R, dialog.Color.G, dialog.Color.B);
-                CurrentColorPreview.Background = new SolidColorBrush(_currentColor);
-            }
+                Title = "Valitse väri",
+                Width = 300,
+                Height = 200,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                Owner = this,
+                ResizeMode = ResizeMode.NoResize
+            };
+            
+            var r = 255;
+            var g = 0;
+            var b = 0;
+            var preview = new Rectangle { Width = 100, Height = 30, Fill = new SolidColorBrush(WpfColors.Red), HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 10, 0, 10) };
+            
+            var rSlider = new Slider { Minimum = 0, Maximum = 255, Value = 255, TickFrequency = 1, IsSnapToTickEnabled = true, Margin = new Thickness(0, 5, 0, 5) };
+            var gSlider = new Slider { Minimum = 0, Maximum = 255, Value = 0, TickFrequency = 1, IsSnapToTickEnabled = true, Margin = new Thickness(0, 5, 0, 5) };
+            var bSlider = new Slider { Minimum = 0, Maximum = 255, Value = 0, TickFrequency = 1, IsSnapToTickEnabled = true, Margin = new Thickness(0, 5, 0, 5) };
+            
+            rSlider.ValueChanged += (s, args) => { r = (int)rSlider.Value; preview.Fill = new SolidColorBrush(WpfColor.FromRgb((byte)r, (byte)g, (byte)b)); };
+            gSlider.ValueChanged += (s, args) => { g = (int)gSlider.Value; preview.Fill = new SolidColorBrush(WpfColor.FromRgb((byte)r, (byte)g, (byte)b)); };
+            bSlider.ValueChanged += (s, args) => { b = (int)bSlider.Value; preview.Fill = new SolidColorBrush(WpfColor.FromRgb((byte)r, (byte)g, (byte)b)); };
+            
+            var okButton = new Button { Content = "OK", Width = 80, IsDefault = true };
+            okButton.Click += (s, args) => { _currentColor = WpfColor.FromRgb((byte)r, (byte)g, (byte)b); CurrentColorPreview.Background = new SolidColorBrush(_currentColor); dialog.Close(); };
+            
+            var cancelButton = new Button { Content = "Peru", Width = 80, IsCancel = true };
+            
+            var stack = new StackPanel { Margin = new Thickness(10) };
+            stack.Children.Add(new TextBlock { Text = "R" });
+            stack.Children.Add(rSlider);
+            stack.Children.Add(new TextBlock { Text = "G" });
+            stack.Children.Add(gSlider);
+            stack.Children.Add(new TextBlock { Text = "B" });
+            stack.Children.Add(bSlider);
+            stack.Children.Add(preview);
+            
+            var btnPanel = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 10, 0, 0) };
+            btnPanel.Children.Add(okButton);
+            btnPanel.Children.Add(new TextBlock { Text = "  " });
+            btnPanel.Children.Add(cancelButton);
+            stack.Children.Add(btnPanel);
+            
+            dialog.Content = stack;
+            dialog.ShowDialog();
         }
         
         private void SpeedSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
