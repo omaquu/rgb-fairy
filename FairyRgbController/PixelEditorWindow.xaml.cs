@@ -241,7 +241,7 @@ namespace FairyRgbController
             
             foreach (var cell in _cells.Values)
             {
-                var (x, y) = ((int, int))cell.Tag);
+                var (x, y) = ((int, int))cell.Tag;
                 if (_pixels[y, x] != Colors.Black)
                 {
                     cell.Fill = new SolidColorBrush(isOddFrame ? _currentColor : Colors.Black);
