@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO;
 using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
@@ -140,7 +139,7 @@ namespace FairyRgbController
         {
             if (rect == null) return;
             
-            var (x, y) = ((int, int))rect.Tag;
+            var (x, y) = ((int, int))rect.Tag);
             
             if (DrawTool.IsChecked == true)
             {
@@ -241,7 +240,7 @@ namespace FairyRgbController
             
             foreach (var cell in _cells.Values)
             {
-                var (x, y) = ((int, int))cell.Tag;
+                var (x, y) = ((int, int))cell.Tag);
                 if (_pixels[y, x] != Colors.Black)
                 {
                     cell.Fill = new SolidColorBrush(isOddFrame ? _currentColor : Colors.Black);
