@@ -173,6 +173,14 @@ namespace FairyRgbController.Services
         public async Task SetPresetAsync(byte id, int b)
             => await Write(HelloFairyProtocol.BuildPresetCommand(id, b));
 
+        public async Task SendRawCommand(byte[] data)
+        {
+            AppLogger.WriteLine("DIY", $"TX RAW: {BitConverter.ToString(data)}");
+            await Write(data);
+        }
+
+        public bool IsConnected => _isConnected;
+
         public Task TurnOffAsync() => SetPowerAsync(false);
 
         private void NotifyStatus(string m) => StatusChanged?.Invoke(this, m);

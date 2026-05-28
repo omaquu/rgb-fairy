@@ -201,6 +201,7 @@ namespace FairyRgbController
                 ApplyColorButton.IsEnabled = true;
                 SaveCurrentColorButton.IsEnabled = true;
                 QuickOffButton.IsEnabled = true;
+                PixelEditorButton.IsEnabled = true;
                 ActionFeedback.Text = $"Yhdistetty: {_selectedDevice.Name}";
             }
             catch (Exception ex)
@@ -251,6 +252,14 @@ namespace FairyRgbController
             PowerButton.Background = new SolidColorBrush(Color.FromRgb(0x1E, 0x1E, 0x1E));
             await _fairyService.SetPowerAsync(false);
             ActionFeedback.Text = "Valot sammutettu";
+        }
+
+        private void OpenPixelEditor_Click(object sender, RoutedEventArgs e)
+        {
+            var editor = new PixelEditorWindow();
+            editor.SetFairyService(_fairyService);
+            editor.Show();
+            ActionFeedback.Text = "Pikseli-editori avattu";
         }
 
         #endregion

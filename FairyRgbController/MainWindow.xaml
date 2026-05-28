@@ -352,6 +352,13 @@
                         Click="QuickOff_Click" Height="36"
                         Padding="12,0" Background="#2A1A1A"
                         BorderThickness="0" IsEnabled="False" FontSize="12"/>
+                
+                <!-- Pixel Editor -->
+                <Button x:Name="PixelEditorButton" Grid.Column="4" Content="🎨 Pikselit"
+                        Click="OpenPixelEditor_Click" Height="36"
+                        Padding="12,0" Background="#4A2A6A"
+                        BorderThickness="0" IsEnabled="False" FontSize="12"
+                        Margin="10,0,0,0"/>
             </Grid>
         </Border>
     </Grid>
