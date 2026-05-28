@@ -27,12 +27,6 @@ namespace FairyRgbController.Services
 
             try
             {
-                // Combined selector: BLE (paired+unpaired) + Classic Bluetooth
-                var bPaired = BluetoothLEDevice.GetDeviceSelectorFromPairingState(true);
-                var bUnpaired = BluetoothLEDevice.GetDeviceSelectorFromPairingState(false);
-                var classic = BluetoothDevice.GetDeviceSelector();
-                var allSelector = $"({bPaired}) OR ({bUnpaired}) OR ({classic})";
-
                 // Quick scan: check paired devices first, then few rounds of discovery
                 var fairyDevices = new List<BleDeviceInfo>();
 
