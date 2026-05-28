@@ -280,18 +280,4 @@ namespace FairyRgbController
             Close();
         }
     }
-
-    public class PresetDef
-    {
-        public int Id { get; }
-        public string Name { get; }
-        public string Icon { get; }
-
-        public PresetDef(int id, string name, string icon)
-        {
-            Id = id;
-            Name = name;
-            Icon = icon;
-        }
-    }
 }
