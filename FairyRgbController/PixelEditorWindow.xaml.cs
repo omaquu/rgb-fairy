@@ -172,7 +172,7 @@ namespace FairyRgbController
             _isDrawing = false;
         }
         
-        private void PixelCanvas_MouseMove(object sender, MouseEventArgs e)
+        private void PixelCanvas_MouseMove(object sender, WpfMouseEventArgs e)
         {
             // Handled by individual cell mouse events
         }
