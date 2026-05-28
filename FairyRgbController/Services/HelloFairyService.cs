@@ -33,14 +33,52 @@ namespace FairyRgbController.Services
                 var classic = BluetoothDevice.GetDeviceSelector();
                 var allSelector = $"({bPaired}) OR ({bUnpaired}) OR ({classic})";
 
-                // 15 rounds of scanning, 2s each + 1s gaps = ~45 seconds
+                // Quick scan: check paired devices first, then few rounds of discovery
                 var fairyDevices = new List<BleDeviceInfo>();
 
-                for (int round = 0; round < 15; round++)
+                // Round 1: Check already paired fairy devices (instant)
+                NotifyStatus("Checking paired devices...");
+                var pairedSelector = BluetoothLEDevice.GetDeviceSelectorFromPairingState(true);
+                var pairedDevs = await DeviceInformation.FindAllAsync(pairedSelector).AsTask().WaitAsync(TimeSpan.FromMilliseconds(3000));
+
+                foreach (var di in pairedDevs)
                 {
-                    NotifyStatus($"Scan {round + 1}/15 ({list.Count} found)...");
+                    if (string.IsNullOrWhiteSpace(di.Name)) continue;
+                    if (di.Name.IndexOf("fairy", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                        di.Name.IndexOf("hello", StringComparison.OrdinalIgnoreCase) >= 0)
+                    {
+                        if (!list.Any(d => d.Id == di.Id))
+                        {
+                            list.Add(new BleDeviceInfo
+                            {
+                                Id = di.Id,
+                                Name = di.Name,
+                                IsPaired = true,
+                                IsConnectable = true
+                            });
+                        }
+                    }
+                }
+
+                fairyDevices = list.Where(d => d.Name.IndexOf("fairy", StringComparison.OrdinalIgnoreCase) >= 0).ToList();
+                DevicesUpdated?.Invoke(this, fairyDevices);
+
+                // If we found paired fairy devices, we're done
+                if (fairyDevices.Count > 0)
+                {
+                    NotifyStatus($"Found {fairyDevices.Count} paired fairy device(s)");
+                    return list;
+                }
+
+                // Round 2-3: Quick discovery scan
+                for (int round = 2; round <= 3; round++)
+                {
+                    NotifyStatus($"Scan {round}/3...");
+                    var unpairedSelector = BluetoothLEDevice.GetDeviceSelectorFromPairingState(false);
+                    var allSelector = $"({pairedSelector}) OR ({unpairedSelector})";
+
                     var devices = await DeviceInformation.FindAllAsync(allSelector)
-                        .AsTask().WaitAsync(TimeSpan.FromMilliseconds(5000));
+                        .AsTask().WaitAsync(TimeSpan.FromMilliseconds(3000));
 
                     int added = 0;
                     foreach (var di in devices)
@@ -59,17 +97,15 @@ namespace FairyRgbController.Services
                         }
                     }
 
-                    NotifyStatus($"Round {round + 1}: +{added} new (total: {list.Count})");
-
-                    // Filter to only FAIRY devices for the UI
                     fairyDevices = list
                         .Where(d => d.Name.IndexOf("fairy", StringComparison.OrdinalIgnoreCase) >= 0)
                         .ToList();
 
                     DevicesUpdated?.Invoke(this, fairyDevices);
+                    NotifyStatus($"Round {round}: +{added} new, {fairyDevices.Count} fairy total");
 
-                    if (fairyDevices.Count > 3) break; // Found enough fairy devices
-                    if (round < 14) await Task.Delay(1000);
+                    if (fairyDevices.Count > 0) break;
+                    if (round < 3) await Task.Delay(500);
                 }
 
                 NotifyStatus($"Done: {list.Count} device(s), {fairyDevices.Count} fairy");

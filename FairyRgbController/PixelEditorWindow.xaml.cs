@@ -45,7 +45,12 @@ namespace FairyRgbController
             InitializeGrid();
             UpdateSpeedLabel();
         }
-        
+
+        public PixelEditorWindow(HelloFairyService service) : this()
+        {
+            _fairyService = service;
+        }
+
         public void SetFairyService(HelloFairyService service)
         {
             _fairyService = service;
