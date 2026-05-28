@@ -306,7 +306,7 @@ namespace FairyRgbController
                 {
                     var json = ExportToJson();
                     File.WriteAllText(dialog.FileName, json);
-                    StatusLabel.Text = $"💾 Tallennettu: {Path.GetFileName(dialog.FileName)}";
+                    StatusLabel.Text = $"💾 Tallennettu: {System.IO.Path.GetFileName(dialog.FileName)}";
                 }
                 catch (Exception ex)
                 {
@@ -330,7 +330,7 @@ namespace FairyRgbController
                 {
                     var json = File.ReadAllText(dialog.FileName);
                     ImportFromJson(json);
-                    StatusLabel.Text = $"📂 Ladattu: {Path.GetFileName(dialog.FileName)}";
+                    StatusLabel.Text = $"📂 Ladattu: {System.IO.Path.GetFileName(dialog.FileName)}";
                 }
                 catch (Exception ex)
                 {
