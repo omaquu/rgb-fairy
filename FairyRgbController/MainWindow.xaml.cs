@@ -447,6 +447,39 @@ namespace FairyRgbController
         }
 
         #endregion
+
+        // Smooth scroll by ~200px per click
+        private const double EffectsScrollStep = 200;
+
+        private void EffectsLeft_Click(object sender, RoutedEventArgs e)
+        {
+            EffectsScrollViewer.ScrollToHorizontalOffset(
+                Math.Max(0, EffectsScrollViewer.HorizontalOffset - EffectsScrollStep));
+        }
+
+        private void EffectsRight_Click(object sender, RoutedEventArgs e)
+        {
+            EffectsScrollViewer.ScrollToHorizontalOffset(
+                Math.Min(EffectsScrollViewer.ScrollableWidth,
+                    EffectsScrollViewer.HorizontalOffset + EffectsScrollStep));
+        }
+
+        private void EffectsScrollViewer_ScrollChanged(object sender, ScrollChangedEventArgs e)
+        {
+            UpdateEffectsCounter();
+        }
+
+        private void UpdateEffectsCounter()
+        {
+            // Calculate which effect is visible (approximate based on scroll position)
+            double offset = EffectsScrollViewer.HorizontalOffset;
+            double itemWidth = 85; // Approximate width per effect button
+            int currentIndex = (int)(offset / itemWidth) + 1;
+            int total = Presets.Length;
+            if (currentIndex > total) currentIndex = total;
+            if (EffectsCounter != null)
+                EffectsCounter.Text = $"{currentIndex} / {total}";
+        }
     }
 
     // Simple preset definition

@@ -239,24 +239,56 @@
                     <StackPanel>
                         <Grid Margin="0,0,0,12">
                             <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
 
-                            <TextBlock Text="Efektit" FontSize="18" FontWeight="SemiBold"/>
-                            <Button Grid.Column="1" Content="⚙️" Style="{StaticResource IconBtn}" Click="ManageEffectsButton_Click" ToolTip="Hallitse efektejä"/>
+                            <Button x:Name="EffectsLeftBtn" Content="◀" Style="{StaticResource IconBtn}" 
+                                    Click="EffectsLeft_Click" FontSize="16" Padding="8,4"/>
+                            <TextBlock Grid.Column="1" Text="Efektit" FontSize="18" FontWeight="SemiBold" 
+                                       VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                            <Button Grid.Column="2" Content="⚙️" Style="{StaticResource IconBtn}" 
+                                    Click="ManageEffectsButton_Click" ToolTip="Hallitse efektejä"/>
                         </Grid>
 
-                        <!-- Horizontal scrolling effects -->
-                        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" Margin="0,0,0,8">
-                            <StackPanel Orientation="Horizontal">
-                                <WrapPanel x:Name="EffectsWrapPanel" Orientation="Horizontal">
-                                    <!-- Effects loaded dynamically -->
-                                </WrapPanel>
-                            </StackPanel>
-                        </ScrollViewer>
+                        <!-- Horizontal scrolling effects with smooth scroll -->
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <!-- Left fade -->
+                            <Border Grid.Column="0" Width="20" Background="Transparent" 
+                                    VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                            
+                            <ScrollViewer x:Name="EffectsScrollViewer" 
+                                          Grid.Column="1"
+                                          HorizontalScrollBarVisibility="Hidden" 
+                                          VerticalScrollBarVisibility="Disabled" 
+                                          Margin="0,0,0,8"
+                                          ScrollChanged="EffectsScrollViewer_ScrollChanged">
+                                <StackPanel Orientation="Horizontal">
+                                    <WrapPanel x:Name="EffectsWrapPanel" Orientation="Horizontal">
+                                        <!-- Effects loaded dynamically -->
+                                    </WrapPanel>
+                                </StackPanel>
+                            </ScrollViewer>
+                            
+                            <!-- Right fade -->
+                            <Border Grid.Column="2" Width="20" Background="Transparent" 
+                                    VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                            
+                            <!-- Right arrow button overlay -->
+                            <Button x:Name="EffectsRightBtn" Grid.Column="2" Content="▶" 
+                                    Style="{StaticResource IconBtn}" FontSize="16" Padding="8,4"
+                                    Click="EffectsRight_Click" VerticalAlignment="Center"/>
+                        </Grid>
 
-                        <TextBlock Text="← Selaa vasemmalle/oikealle →" FontSize="11" Foreground="{StaticResource TextMuted}" HorizontalAlignment="Center"/>
+                        <TextBlock x:Name="EffectsCounter" Text="1 / 58" FontSize="11" 
+                                   Foreground="{StaticResource TextMuted}" HorizontalAlignment="Center"/>
                     </StackPanel>
                 </Border>
 
