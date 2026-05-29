@@ -21,6 +21,8 @@ namespace FairyRgbController.Services
 
         // Public connection state for UI binding
         public bool IsConnected => _isConnected;
+        
+        public Task<bool> IsConnectedAsync() => Task.FromResult(_isConnected);
 
         public async Task<IReadOnlyList<BleDeviceInfo>> ScanAsync(int timeoutMs = 30000)
         {
