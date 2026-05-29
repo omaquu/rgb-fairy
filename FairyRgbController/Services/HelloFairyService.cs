@@ -64,7 +64,7 @@ namespace FairyRgbController.Services
 
                     NotifyStatus($"Round {round + 1}: +{added} new (total: {list.Count})");
 
-                    // Filter to only FAIRY/HELLO devices for the UI
+                    // Filter to only FAIRY/HELLO devices
                     fairyDevices = list
                         .Where(d => d.Name.IndexOf("fairy", StringComparison.OrdinalIgnoreCase) >= 0 ||
                                     d.Name.IndexOf("hello", StringComparison.OrdinalIgnoreCase) >= 0)
