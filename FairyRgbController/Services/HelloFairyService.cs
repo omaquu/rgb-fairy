@@ -19,7 +19,8 @@ namespace FairyRgbController.Services
         public event EventHandler<string>? StatusChanged;
         public event EventHandler<List<BleDeviceInfo>>? DevicesUpdated;
 
-        public Task<bool> IsConnectedAsync() => Task.FromResult(_isConnected);
+        // Public connection state for UI binding
+        public bool IsConnected => _isConnected;
 
         public async Task<IReadOnlyList<BleDeviceInfo>> ScanAsync(int timeoutMs = 30000)
         {
@@ -160,6 +161,15 @@ namespace FairyRgbController.Services
             var w = new DataWriter();
             w.WriteBytes(data);
             await _commandCharacteristic.WriteValueAsync(w.DetachBuffer(), GattWriteOption.WriteWithResponse);
+        }
+
+        // Send raw DIY command for pixel effects
+        public async Task SendRawCommand(byte[] data)
+        {
+            if (!_isConnected || _commandCharacteristic == null) throw new InvalidOperationException();
+            var w = new DataWriter();
+            w.WriteBytes(data);
+            await _commandCharacteristic.WriteValueAsync(w.DetachBuffer(), GattWriteOption.WriteWithoutResponse);
         }
 
         public async Task SetPowerAsync(bool on)
